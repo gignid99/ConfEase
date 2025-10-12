@@ -1,0 +1,303 @@
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch } from 'react-native';
+
+export default function SignInScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  return (
+    <View style={styles.container}>
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <View style={styles.logo}>
+          <View style={styles.logoInner} />
+        </View>
+        <Text style={styles.brandName}>ConFX</Text>
+      </View>
+
+      {/* Sign In Form */}
+      <View style={styles.formContainer}>
+        <Text style={styles.title}>Sign in</Text>
+
+        {/* Email Input */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputIcon}>
+            <View style={styles.emailIcon} />
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="abc@email.com"
+            placeholderTextColor="#999"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        {/* Password Input */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputIcon}>
+            <View style={styles.lockIcon} />
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Your password"
+            placeholderTextColor="#999"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity 
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <View style={styles.eyeIconShape} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Remember Me & Forgot Password */}
+        <View style={styles.optionsRow}>
+          <View style={styles.rememberMe}>
+            <Switch
+              value={rememberMe}
+              onValueChange={setRememberMe}
+              trackColor={{ false: '#d1d5db', true: '#6366f1' }}
+              thumbColor="#fff"
+            />
+            <Text style={styles.rememberText}>Remember Me</Text>
+          </View>
+          <TouchableOpacity>
+            <Text style={styles.forgotText}>Forgot Password?</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Sign In Button */}
+        <TouchableOpacity style={styles.signInButton}>
+          <Text style={styles.signInButtonText}>SIGN IN</Text>
+          <Text style={styles.arrow}>→</Text>
+        </TouchableOpacity>
+
+        {/* Divider */}
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>OR</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        {/* Social Login Buttons */}
+        <TouchableOpacity style={styles.socialButton}>
+          <View style={styles.googleIcon} />
+          <Text style={styles.socialButtonText}>Login with Google</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.socialButton}>
+          <View style={styles.facebookIcon} />
+          <Text style={styles.socialButtonText}>Login with Facebook</Text>
+        </TouchableOpacity>
+
+        {/* Sign Up Link */}
+        <View style={styles.signUpContainer}>
+          <Text style={styles.signUpText}>Don't have an account? </Text>
+          <TouchableOpacity>
+            <Text style={styles.signUpLink}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    alignItems: 'center',
+    paddingTop: 60,
+    paddingHorizontal: 20,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  logo: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#6366f1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  logoInner: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#22d3ee',
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  brandName: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#1f2937',
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#1f2937',
+    marginBottom: 24,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    height: 56,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  inputIcon: {
+    marginRight: 12,
+  },
+  emailIcon: {
+    width: 20,
+    height: 16,
+    backgroundColor: '#9ca3af',
+    borderRadius: 2,
+  },
+  lockIcon: {
+    width: 16,
+    height: 20,
+    backgroundColor: '#9ca3af',
+    borderRadius: 3,
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  eyeIcon: {
+    padding: 8,
+  },
+  eyeIconShape: {
+    width: 24,
+    height: 16,
+    backgroundColor: '#9ca3af',
+    borderRadius: 12,
+  },
+  optionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  rememberMe: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rememberText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#1f2937',
+  },
+  forgotText: {
+    fontSize: 14,
+    color: '#6366f1',
+  },
+  signInButton: {
+    backgroundColor: '#6366f1',
+    borderRadius: 12,
+    height: 56,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  signInButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 1,
+    marginRight: 8,
+  },
+  arrow: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#e5e7eb',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#9ca3af',
+    fontSize: 14,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    height: 56,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  googleIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#4285f4',
+    marginRight: 12,
+  },
+  facebookIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1877f2',
+    marginRight: 12,
+  },
+  socialButtonText: {
+    fontSize: 16,
+    color: '#1f2937',
+  },
+  signUpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  signUpText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  signUpLink: {
+    fontSize: 14,
+    color: '#6366f1',
+    fontWeight: '600',
+  },
+});
