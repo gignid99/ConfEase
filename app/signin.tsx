@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch } from 'react-native';
-
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ScrollView } from 'react-native';
+import { router } from 'expo-router';
+import { Link } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -8,7 +10,8 @@ export default function SignInScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
       {/* Logo */}
       <View style={styles.logoContainer}>
         <View style={styles.logo}>
@@ -23,9 +26,10 @@ export default function SignInScreen() {
 
         {/* Email Input */}
         <View style={styles.inputContainer}>
-          <View style={styles.inputIcon}>
+          {/* <View style={styles.inputIcon}>
             <View style={styles.emailIcon} />
-          </View>
+          </View> */}
+          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
           <TextInput
             style={styles.input}
             placeholder="abc@email.com"
@@ -39,9 +43,10 @@ export default function SignInScreen() {
 
         {/* Password Input */}
         <View style={styles.inputContainer}>
-          <View style={styles.inputIcon}>
+          {/* <View style={styles.inputIcon}>
             <View style={styles.lockIcon} />
-          </View>
+          </View> */}
+          <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
           <TextInput
             style={styles.input}
             placeholder="Your password"
@@ -54,7 +59,8 @@ export default function SignInScreen() {
             style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <View style={styles.eyeIconShape} />
+            {/* //<View style={styles.eyeIconShape} /> */}
+            <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#9ca3af" />
           </TouchableOpacity>
         </View>
 
@@ -75,11 +81,13 @@ export default function SignInScreen() {
         </View>
 
         {/* Sign In Button */}
-        <TouchableOpacity style={styles.signInButton}>
-          <Text style={styles.signInButtonText}>SIGN IN</Text>
-          <Text style={styles.arrow}>→</Text>
-        </TouchableOpacity>
-
+        {/* <view>
+        <Link href="/signup" asChild>
+          <TouchableOpacity>
+            <Text style={styles.signUpLink}> Sign up</Text>
+          </TouchableOpacity>
+        </Link>
+       </view> */}
         {/* Divider */}
         <View style={styles.divider}>
           <View style={styles.dividerLine} />
@@ -89,34 +97,42 @@ export default function SignInScreen() {
 
         {/* Social Login Buttons */}
         <TouchableOpacity style={styles.socialButton}>
-          <View style={styles.googleIcon} />
+          {/* <View style={styles.googleIcon} /> */}
+          <Ionicons name="logo-google" size={24} color="#4285f4" style={{ marginRight: 12 }} />
           <Text style={styles.socialButtonText}>Login with Google</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.socialButton}>
-          <View style={styles.facebookIcon} />
+          {/* <View style={styles.facebookIcon} /> */}
+          <Ionicons name="logo-facebook" size={24} color="#1877f2" style={{ marginRight: 12 }} />
           <Text style={styles.socialButtonText}>Login with Facebook</Text>
         </TouchableOpacity>
 
         {/* Sign Up Link */}
-        <View style={styles.signUpContainer}>
-          <Text style={styles.signUpText}>Don't have an account? </Text>
-          <TouchableOpacity>
-            <Text style={styles.signUpLink}>Sign up</Text>
-          </TouchableOpacity>
-        </View>
+       <View style={styles.signUpContainer}>
+  <Text style={styles.signUpText}>Don't have an account? </Text>
+  <Link href="/signup" style={styles.signUpLink}>
+    Sign up
+  </Link>
+</View>
       </View>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    backgroundColor: '#f5f5f5',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
     alignItems: 'center',
     paddingTop: 60,
     paddingHorizontal: 20,
+    paddingBottom: 40,
   },
   logoContainer: {
     alignItems: 'center',
