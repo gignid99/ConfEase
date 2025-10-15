@@ -141,6 +141,11 @@ export default function SignUpScreen() {
             <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
             <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>
+          {/*create event*/}
+          {/* Temporary test button to go to Create Event */}
+          <TouchableOpacity onPress={() => router.push('/create-event')} style={[styles.signUpButton, { backgroundColor: '#22d3ee' }]}>
+          <Text style={styles.signUpButtonText}>Go to Create Event</Text>
+             </TouchableOpacity>
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -166,6 +171,7 @@ export default function SignUpScreen() {
               <Text style={styles.signInLink}>Sign in</Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </ScrollView>
