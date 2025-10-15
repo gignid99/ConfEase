@@ -81,6 +81,9 @@ export default function CreateEvent() {
       <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
         <Text style={styles.createText}>Create</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.btn} onPress={() => router.push("/share-profile")}>
+  <Text style={styles.btnText}>Share Profile</Text>
+</TouchableOpacity>
     </View>
   );
 }
@@ -98,6 +101,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     minHeight: 80,
     textAlignVertical: "top",
+  },
+  btn: {
+    backgroundColor: "#6366f1",
+    padding: 14,
+    borderRadius: 10,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  btnText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   uploadButton: {
     backgroundColor: "#E3E7FF",
