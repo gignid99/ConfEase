@@ -89,7 +89,14 @@ export default function CreateEvent() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F9F9FF", padding: 20 },
+  container: { flex: 1, backgroundColor: "#F9F9FF", padding: 20,...(Platform.OS === "web" && {
+      width: "100%",
+      maxWidth: 400,
+      marginHorizontal: "auto",
+      marginVertical: 40,
+      borderRadius: 16,
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    }), },
   title: { fontSize: 26, fontWeight: "700", color: "#3F51B5", marginBottom: 20 },
   label: { fontSize: 16, fontWeight: "500", color: "#333", marginTop: 10 },
   input: {

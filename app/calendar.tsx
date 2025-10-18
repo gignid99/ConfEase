@@ -1,5 +1,12 @@
 import React from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { 
+  View, 
+  Text, 
+  ScrollView, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Platform 
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -18,7 +25,12 @@ export default function CalendarScreen() {
   const days = ["Thu 26", "Fri 27", "Sat 28", "Sun 29", "Mon 30", "Tue 31", "Wed 01"];
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        Platform.OS === "web" && styles.webContainer, // ✅ only affects web
+      ]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -53,12 +65,25 @@ export default function CalendarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fb" },
+
+  // ✅ This only applies when running on web
+  webContainer: {
+    maxWidth: 500, // limit width
+    alignSelf: "center", // center content
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    marginVertical: 20,
+  },
+
   header: {
     backgroundColor: "#4f46e5",
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
+    borderTopLeftRadius: Platform.OS === "web" ? 12 : 0,
+    borderTopRightRadius: Platform.OS === "web" ? 12 : 0,
   },
   headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600", marginLeft: 10 },
   daysContainer: {

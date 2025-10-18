@@ -1,21 +1,22 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, Dimensions } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import QRCode from "react-native-qrcode-svg";
 
 export default function ShareProfileScreen() {
   const router = useRouter();
+  const isWeb = Platform.OS === "web";
+  const screenWidth = Dimensions.get("window").width;
 
-  // Example user data — you can replace this with real info (like user ID or profile URL)
   const user = {
     name: "pg lab pr ",
     qrValue: "https://confEase.app/user/minakshi",
-    avatar: "https://cdn-icons-png.flaticon.com/512/219/219986.png", // sample avatar
+    avatar: "https://cdn-icons-png.flaticon.com/512/219/219986.png",
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isWeb && styles.webContainer]}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -29,7 +30,6 @@ export default function ShareProfileScreen() {
         <Image source={{ uri: user.avatar }} style={styles.avatar} />
         <Text style={styles.name}>{user.name}</Text>
 
-        {/* QR Code */}
         <View style={styles.qrContainer}>
           <QRCode value={user.qrValue} size={180} />
         </View>
@@ -46,6 +46,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f9fafb",
+  },
+  webContainer: {
+   width: "100%",
+      maxWidth: 400,
+      marginHorizontal: "auto",
+      marginVertical: 40,
+      borderRadius: 16,
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
   },
   header: {
     backgroundColor: "#4f46e5",
