@@ -159,7 +159,7 @@ export default function SignUpScreen() {
             <Text style={styles.socialButtonText}>Sign up with Facebook</Text>
           </TouchableOpacity>
 
-          {/* Sign In Link */}
+          {/* Sign In Link */}  
           <View style={styles.signInContainer}>
             <Text style={styles.signInText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/signin')}>
