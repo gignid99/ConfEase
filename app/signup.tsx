@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+
 export default function SignUpScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -10,6 +13,20 @@ export default function SignUpScreen() {
   const [selectedRole, setSelectedRole] = useState(''); // 'organizer' or 'attendee'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const signUp = async () => {
+    try {
+      const user = await createUserWithEmailAndPassword(auth, email, password)
+      if (user) 
+      {
+        console.log('Registered:', { fullName, email });
+            router.push('/signin');
+      }
+    } catch (error: any) {
+      console.log(error)
+      alert('Sign in failed: ' + error.message);
+    }
+  } 
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -29,7 +46,7 @@ export default function SignUpScreen() {
           {/* Full Name Input */}
           <View style={styles.inputContainer}>
             <Ionicons name="person-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
-  
+
             <TextInput
               style={styles.input}
               placeholder="Full Name"
@@ -41,19 +58,19 @@ export default function SignUpScreen() {
           </View>
 
           {/* Email Input */}
-         <View style={styles.inputContainer}>
-  <Ionicons name="mail-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
-  
-  <TextInput
-    style={styles.input}
-    placeholder="abc@email.com"
-    placeholderTextColor="#999"
-    value={email}
-    onChangeText={setEmail}
-    keyboardType="email-address"
-    autoCapitalize="none"
-  />
-</View>
+          <View style={styles.inputContainer}>
+            <Ionicons name="mail-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+
+            <TextInput
+              style={styles.input}
+              placeholder="abc@email.com"
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
 
           {/* Password Input */}
@@ -67,7 +84,7 @@ export default function SignUpScreen() {
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.eyeIcon}
               onPress={() => setShowPassword(!showPassword)}
             >
@@ -86,7 +103,7 @@ export default function SignUpScreen() {
               onChangeText={setConfirmPassword}
               secureTextEntry={!showConfirmPassword}
             />
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.eyeIcon}
               onPress={() => setShowConfirmPassword(!showConfirmPassword)}
             >
@@ -137,7 +154,7 @@ export default function SignUpScreen() {
           </View>
 
           {/* Sign Up Button */}
-          <TouchableOpacity style={styles.signUpButton}>
+          <TouchableOpacity style={styles.signUpButton} onPress={signUp}>
             <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
             <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>

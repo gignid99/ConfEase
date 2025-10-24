@@ -10,12 +10,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        {/* 👇 Auth screens */}
+        {/* Auth screens */}
         <Stack.Screen name="signin" />
         <Stack.Screen name="signup" />
 
-        {/* 👇 Main app (tab layout) */}
-        <Stack.Screen name="(tabs)" />
+        {/* Main app (tab layout) */}
+        {/* <Stack.Screen name="(tabs)" /> */}
       </Stack>
 
       <StatusBar style="auto" />
