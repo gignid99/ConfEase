@@ -13,11 +13,11 @@ export default function SignInScreen() {
   const [showPassword, setShowPassword] = useState(false);
 
   const signIn = async () => {
-    console.log("here")
     try {
       const user = await signInWithEmailAndPassword(auth, email, password)
       if (user) {
         console.log("user signed in")
+        router.replace('/attendeeHome')
       }
     } catch (error: any) {
       console.log(error)

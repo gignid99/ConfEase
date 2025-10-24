@@ -20,7 +20,7 @@ export default function SignUpScreen() {
       if (user) 
       {
         console.log('Registered:', { fullName, email });
-            router.push('/signin');
+            router.replace('/signin'); // replace <- push
       }
     } catch (error: any) {
       console.log(error)
