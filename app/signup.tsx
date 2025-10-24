@@ -159,6 +159,18 @@ export default function SignUpScreen() {
             <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>
 
+          {/*already created event or calender*/}
+           <TouchableOpacity  style={styles.calendarButton} onPress={() => router.push("/calendar")}
+          activeOpacity={0.8} >
+         <Text style={styles.calendarButtonText}>Go to Calendar</Text>
+       </TouchableOpacity>
+
+          {/*create event*/}
+          {/* Temporary test button to go to Create Event */}
+          <TouchableOpacity onPress={() => router.push('/create-event')} style={[styles.signUpButton, { backgroundColor: '#22d3ee' }]}>
+          <Text style={styles.signUpButtonText}>Go to Create Event</Text>
+             </TouchableOpacity>
+
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
@@ -176,13 +188,14 @@ export default function SignUpScreen() {
             <Text style={styles.socialButtonText}>Sign up with Facebook</Text>
           </TouchableOpacity>
 
-          {/* Sign In Link */}
+          {/* Sign In Link */}  
           <View style={styles.signInContainer}>
             <Text style={styles.signInText}>Already have an account? </Text>
             <TouchableOpacity onPress={() => router.push('/signin')}>
               <Text style={styles.signInLink}>Sign in</Text>
             </TouchableOpacity>
           </View>
+
         </View>
       </View>
     </ScrollView>
@@ -244,6 +257,26 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 24,
+  },
+   calendarButton: {
+    backgroundColor: "#6366f1", // Indigo tone
+    paddingVertical: 14,
+    paddingHorizontal: 28,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
+    marginTop: 20,
+  },
+  calendarButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   inputContainer: {
     flexDirection: 'row',

@@ -7,10 +7,29 @@ export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
   const [entryNo, setEntryNo] = useState('');
   const [email, setEmail] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleRegister = () => {
+    const nextErrors: Record<string, string> = {};
+    if (!fullName || !fullName.trim()) nextErrors.fullName = 'Full name is required';
+    if (!entryNo || !entryNo.trim()) nextErrors.entryNo = 'Entry No. is required';
+    if (!email || !email.trim()) {
+      nextErrors.email = 'Email is required';
+    } else {
+      // simple email regex
+      const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRe.test(email)) nextErrors.email = 'Enter a valid email address';
+    }
+
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      return;
+    }
+
     console.log('Registered:', { fullName, entryNo, email });
-    router.push('/signin');
+    // On successful registration, navigate back to attendee home
+    router.push('/attendeeHome');
   };
 
   return (
@@ -39,6 +58,7 @@ export default function RegisterScreen() {
               onChangeText={setFullName}
             />
           </View>
+          {errors.fullName ? <Text style={styles.errorText}>{errors.fullName}</Text> : null}
 
           {/* Entry Number */}
           <View style={styles.inputContainer}>
@@ -51,6 +71,7 @@ export default function RegisterScreen() {
               onChangeText={setEntryNo}
             />
           </View>
+          {errors.entryNo ? <Text style={styles.errorText}>{errors.entryNo}</Text> : null}
 
           {/* Email */}
           <View style={styles.inputContainer}>
@@ -65,6 +86,7 @@ export default function RegisterScreen() {
               autoCapitalize="none"
             />
           </View>
+          {errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}
 
           {/* Register Button */}
           <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
@@ -186,5 +208,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6366f1',
     fontWeight: '600',
+  },
+  errorText: {
+    color: '#ef4444',
+    marginTop: -8,
+    marginBottom: 8,
+    marginLeft: 6,
+    fontSize: 12,
   },
 });
