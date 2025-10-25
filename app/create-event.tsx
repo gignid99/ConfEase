@@ -5,6 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 
 
 export default function CreateEvent() {
@@ -50,6 +51,7 @@ export default function CreateEvent() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" backgroundColor="#F9F9FF" />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color="#333" />
