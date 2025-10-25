@@ -18,6 +18,9 @@ export default function RootLayout() {
         <Stack.Screen name="calendar" />
         <Stack.Screen name="create-event" />
          <Stack.Screen name="share-profile" />
+         <Stack.Screen name="SendConnection"/>
+         <Stack.Screen name="ConnectionRequests"/>
+         <Stack.Screen name="ProfileScreen"/>
         {/* Main app (tab layout) */}
         {/* <Stack.Screen name="(tabs)" /> */}
       </Stack>

@@ -11,7 +11,7 @@ export default function ShareProfileScreen() {
 
   const user = {
     name: "pg lab pr ",
-    qrValue: "https://confEase.app/user/minakshi",
+    qrValue: "https://confEase.app/user/check",
     avatar: "https://cdn-icons-png.flaticon.com/512/219/219986.png",
   };
 

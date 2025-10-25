@@ -4,15 +4,16 @@ import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const menuItems: { label: string; icon: any; route?: string }[] = [
-  { label: 'My Profile', icon: 'account', route: '/account'},
+  { label: 'My Profile', icon: 'account', route: '/ProfileScreen'},
   { label: 'Calendar', icon: 'calendar' , route: '/calendar'},
   { label: 'create event', icon: 'bank' , route: '/create-event'},
   { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
-  { label: 'Nearby Connection', icon: 'account-multiple' , route: '/account'},
+  { label: 'Nearby Connection', icon: 'account-multiple' , route: '/SendConnection'},
   { label: 'Certificates', icon: 'certificate', route: '/account' },
   { label: 'Settings', icon: 'cog', route: '/account' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
   { label: 'Sign Out', icon: 'logout', route: '/account' },
+
 ];
 
 export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
