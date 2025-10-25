@@ -14,7 +14,7 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
-  const handleMenuItemPress = (label) => {
+  const handleMenuItemPress = (label: string) => {
     console.log(`${label} pressed`);
     // Add navigation or action handling here
   };
@@ -24,7 +24,7 @@ export default function Sidebar() {
       {/* Profile Section */}
       <View style={styles.profileSection}>
         <Image
-          source={require('./profile-placeholder.png')} // Replace with your actual profile image
+          source={require('./confx-logo.png')} // Replace with your actual profile image
           style={styles.profileImage}
         />
         <Text style={styles.profileName}>Surya Singh Tomar</Text>
