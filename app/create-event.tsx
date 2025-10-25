@@ -81,9 +81,7 @@ export default function CreateEvent() {
       <TouchableOpacity style={styles.createButton} onPress={handleCreate}>
         <Text style={styles.createText}>Create</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.btn} onPress={() => router.push("/share-profile")}>
-  <Text style={styles.btnText}>Share Profile</Text>
-</TouchableOpacity>
+    
     </View>
   );
 }

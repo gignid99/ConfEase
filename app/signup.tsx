@@ -158,19 +158,7 @@ export default function SignUpScreen() {
             <Text style={styles.signUpButtonText}>CREATE ACCOUNT</Text>
             <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>
-
-          {/*already created event or calender*/}
-           <TouchableOpacity  style={styles.calendarButton} onPress={() => router.push("/calendar")}
-          activeOpacity={0.8} >
-         <Text style={styles.calendarButtonText}>Go to Calendar</Text>
-       </TouchableOpacity>
-
-          {/*create event*/}
-          {/* Temporary test button to go to Create Event */}
-          <TouchableOpacity onPress={() => router.push('/create-event')} style={[styles.signUpButton, { backgroundColor: '#22d3ee' }]}>
-          <Text style={styles.signUpButtonText}>Go to Create Event</Text>
-             </TouchableOpacity>
-
+          
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />

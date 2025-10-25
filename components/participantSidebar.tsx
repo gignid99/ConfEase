@@ -1,23 +1,29 @@
 import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { useRouter } from 'expo-router';
 
-const menuItems: { label: string; icon: any }[] = [
-  { label: 'My Profile', icon: 'account' },
-  { label: 'Calendar', icon: 'calendar' },
-  { label: 'Share Profile', icon: 'share-variant' },
-  { label: 'Nearby Connection', icon: 'account-multiple' },
-  { label: 'Certificates', icon: 'certificate' },
-  { label: 'Settings', icon: 'cog' },
-  { label: 'Help & FAQs', icon: 'help-circle' },
-  { label: 'Sign Out', icon: 'logout' },
+const menuItems: { label: string; icon: any; route?: string }[] = [
+  { label: 'My Profile', icon: 'account', route: '/account'},
+  { label: 'Calendar', icon: 'calendar' , route: '/calendar'},
+  { label: 'create event', icon: 'bank' , route: '/create-event'},
+  { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
+  { label: 'Nearby Connection', icon: 'account-multiple' , route: '/account'},
+  { label: 'Certificates', icon: 'certificate', route: '/account' },
+  { label: 'Settings', icon: 'cog', route: '/account' },
+  { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
+  { label: 'Sign Out', icon: 'logout', route: '/account' },
 ];
 
 export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
-  const handleMenuItemPress = (label: string) => {
-    console.log(`${label} pressed`);
-    // navigation or actions can be added here
+  const router = useRouter();
+ 
+ const handleMenuItemPress = (item: { label: string; route?: string }) => {
+    
+    if (item.route) {
+      router.push(item.route as any);
+    }
+    if (onClose) onClose();
   };
 
   return (
@@ -49,7 +55,7 @@ export default function ParticipantSidebar({ onClose }: { onClose?: () => void }
           <TouchableOpacity
             key={index}
             style={styles.menuItem}
-            onPress={() => handleMenuItemPress(item.label)}
+            onPress={() => handleMenuItemPress(item)}
             activeOpacity={0.6}
           >
             <Icon name={item.icon} size={20} color="#888" style={styles.icon} />

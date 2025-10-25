@@ -14,6 +14,10 @@ export default function RootLayout() {
         <Stack.Screen name="signin" />
         <Stack.Screen name="signup" />
 
+        {/* events */}
+        <Stack.Screen name="calendar" />
+        <Stack.Screen name="create-event" />
+         <Stack.Screen name="share-profile" />
         {/* Main app (tab layout) */}
         {/* <Stack.Screen name="(tabs)" /> */}
       </Stack>
