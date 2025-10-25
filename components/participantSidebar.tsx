@@ -1,9 +1,9 @@
-// Sidebar.js
+import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
-const menuItems = [
+const menuItems: { label: string; icon: any }[] = [
   { label: 'My Profile', icon: 'account' },
   { label: 'Calendar', icon: 'calendar' },
   { label: 'Share Profile', icon: 'share-variant' },
@@ -14,26 +14,35 @@ const menuItems = [
   { label: 'Sign Out', icon: 'logout' },
 ];
 
-export default function Sidebar() {
+export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
   const handleMenuItemPress = (label: string) => {
     console.log(`${label} pressed`);
-    // Add navigation or action handling here
+    // navigation or actions can be added here
   };
 
   return (
     <View style={styles.container}>
-      {/* Close / Cross button (top-right) */}
-      <TouchableOpacity style={styles.closeButton} onPress={() => router.push('../attendeeHome')}>
+      {/* Close / Cross button (top-right) - navigates to attendee profile */}
+      <TouchableOpacity
+        style={styles.closeButton}
+        onPress={() => {
+          router.push('/attendeeHome');
+          if (onClose) onClose();
+        }}
+      >
         <Icon name="close" size={22} color="#444" />
       </TouchableOpacity>
+
       {/* Profile Section */}
       <View style={styles.profileSection}>
         <Image
-          source={require('./confx-logo.png')} // Replace with your actual profile image
+          source={{ uri: 'https://example.com/profile-placeholder.png' }}
           style={styles.profileImage}
         />
+
         <Text style={styles.profileName}>Surya Singh Tomar</Text>
       </View>
+
       {/* Menu Items */}
       <ScrollView style={styles.menu} showsVerticalScrollIndicator={false}>
         {menuItems.map((item, index) => (
@@ -70,6 +79,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     alignItems: 'flex-start',
     marginBottom: 24,
+    marginTop: 8,
   },
   profileImage: {
     width: 80,

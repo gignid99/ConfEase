@@ -3,119 +3,133 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ScrollView
 import { router } from 'expo-router';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  const signIn = async () => {
+    try {
+      const user = await signInWithEmailAndPassword(auth, email, password)
+      if (user) {
+        console.log("user signed in")
+        router.replace('/attendeeHome')
+      }
+    } catch (error: any) {
+      console.log(error)
+      alert('Sign in failed: ' + error.message);
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
       <View style={styles.container}>
-      {/* Logo */}
-      <View style={styles.logoContainer}>
-        <View style={styles.logo}>
-          <View style={styles.logoInner} />
+        {/* Logo */}
+        <View style={styles.logoContainer}>
+          <View style={styles.logo}>
+            <View style={styles.logoInner} />
+          </View>
+          <Text style={styles.brandName}>ConFX</Text>
         </View>
-        <Text style={styles.brandName}>ConFX</Text>
-      </View>
 
-      {/* Sign In Form */}
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Sign in</Text>
+        {/* Sign In Form */}
+        <View style={styles.formContainer}>
+          <Text style={styles.title}>Sign in</Text>
 
-        {/* Email Input */}
-        <View style={styles.inputContainer}>
-          {/* <View style={styles.inputIcon}>
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            {/* <View style={styles.inputIcon}>
             <View style={styles.emailIcon} />
           </View> */}
-          <Ionicons name="mail-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
-          <TextInput
-            style={styles.input}
-            placeholder="abc@email.com"
-            placeholderTextColor="#999"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
+            <Ionicons name="mail-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              style={styles.input}
+              placeholder="abc@email.com"
+              placeholderTextColor="#999"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+          </View>
 
-        {/* Password Input */}
-        <View style={styles.inputContainer}>
-          {/* <View style={styles.inputIcon}>
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            {/* <View style={styles.inputIcon}>
             <View style={styles.lockIcon} />
           </View> */}
-          <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
-          <TextInput
-            style={styles.input}
-            placeholder="Your password"
-            placeholderTextColor="#999"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={!showPassword}
-          />
-          <TouchableOpacity 
-            style={styles.eyeIcon}
-            onPress={() => setShowPassword(!showPassword)}
-          >
-            {/* //<View style={styles.eyeIconShape} /> */}
-            <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#9ca3af" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Remember Me & Forgot Password */}
-        <View style={styles.optionsRow}>
-          <View style={styles.rememberMe}>
-            <Switch
-              value={rememberMe}
-              onValueChange={setRememberMe}
-              trackColor={{ false: '#d1d5db', true: '#6366f1' }}
-              thumbColor="#fff"
+            <Ionicons name="lock-closed-outline" size={20} color="#9ca3af" style={{ marginRight: 12 }} />
+            <TextInput
+              style={styles.input}
+              placeholder="Your password"
+              placeholderTextColor="#999"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
             />
-            <Text style={styles.rememberText}>Remember Me</Text>
+            <TouchableOpacity
+              style={styles.eyeIcon}
+              onPress={() => setShowPassword(!showPassword)}
+            >
+              {/* //<View style={styles.eyeIconShape} /> */}
+              <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#9ca3af" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity>
-            <Text style={styles.forgotText}>Forgot Password?</Text>
+
+          {/* Remember Me & Forgot Password */}
+          <View style={styles.optionsRow}>
+            <View style={styles.rememberMe}>
+              <Switch
+                value={rememberMe}
+                onValueChange={setRememberMe}
+                trackColor={{ false: '#d1d5db', true: '#6366f1' }}
+                thumbColor="#fff"
+              />
+              <Text style={styles.rememberText}>Remember Me</Text>
+            </View>
+            <TouchableOpacity>
+              <Text style={styles.forgotText}>Forgot Password?</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Sign In Button */}
+          <TouchableOpacity style={styles.signInButton} onPress={signIn}>
+            <Text style={styles.signInButtonText}>SIGN IN</Text>
+            <Text style={styles.arrow}>→</Text>
           </TouchableOpacity>
-        </View>
 
-        {/* Sign In Button */}
-        {/* <view>
-        <Link href="/signup" asChild>
-          <TouchableOpacity>
-            <Text style={styles.signUpLink}> Sign up</Text>
+          {/* Divider */}
+          <View style={styles.divider}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>OR</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Social Login Buttons */}
+          <TouchableOpacity style={styles.socialButton}>
+            {/* <View style={styles.googleIcon} /> */}
+            <Ionicons name="logo-google" size={24} color="#4285f4" style={{ marginRight: 12 }} />
+            <Text style={styles.socialButtonText}>Login with Google</Text>
           </TouchableOpacity>
-        </Link>
-       </view> */}
-        {/* Divider */}
-        <View style={styles.divider}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.dividerLine} />
+
+          <TouchableOpacity style={styles.socialButton}>
+            {/* <View style={styles.facebookIcon} /> */}
+            <Ionicons name="logo-facebook" size={24} color="#1877f2" style={{ marginRight: 12 }} />
+            <Text style={styles.socialButtonText}>Login with Facebook</Text>
+          </TouchableOpacity>
+
+          {/* Sign Up Link */}
+          <View style={styles.signUpContainer}>
+            <Text style={styles.signUpText}>Don't have an account? </Text>
+            <Link href="/signup" style={styles.signUpLink}>
+              Sign up
+            </Link>
+          </View>
         </View>
-
-        {/* Social Login Buttons */}
-        <TouchableOpacity style={styles.socialButton}>
-          {/* <View style={styles.googleIcon} /> */}
-          <Ionicons name="logo-google" size={24} color="#4285f4" style={{ marginRight: 12 }} />
-          <Text style={styles.socialButtonText}>Login with Google</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.socialButton}>
-          {/* <View style={styles.facebookIcon} /> */}
-          <Ionicons name="logo-facebook" size={24} color="#1877f2" style={{ marginRight: 12 }} />
-          <Text style={styles.socialButtonText}>Login with Facebook</Text>
-        </TouchableOpacity>
-
-        {/* Sign Up Link */}
-       <View style={styles.signUpContainer}>
-  <Text style={styles.signUpText}>Don't have an account? </Text>
-  <Link href="/signup" style={styles.signUpLink}>
-    Sign up
-  </Link>
-</View>
-      </View>
       </View>
     </ScrollView>
   );
