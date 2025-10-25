@@ -3,6 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Platform, Image } 
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 export default function CreateEvent() {
   const router = useRouter();
@@ -46,9 +49,14 @@ export default function CreateEvent() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
       <Text style={styles.title}>Create Event</Text>
-
+      
+        </View>
       <Text style={styles.label}>About Conference</Text>
       <TextInput
         style={styles.input}
@@ -82,7 +90,7 @@ export default function CreateEvent() {
         <Text style={styles.createText}>Create</Text>
       </TouchableOpacity>
     
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -95,7 +103,7 @@ const styles = StyleSheet.create({
       borderRadius: 16,
       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     }), },
-  title: { fontSize: 26, fontWeight: "700", color: "#3F51B5", marginBottom: 20 },
+  title: { fontSize: 26, fontWeight: "700", color: "#3F51B5", marginTop: 20, textAlign: 'center' },
   label: { fontSize: 16, fontWeight: "500", color: "#333", marginTop: 10 },
   input: {
     borderWidth: 1,
@@ -135,6 +143,16 @@ const styles = StyleSheet.create({
     marginTop: 6,
     alignItems: "center",
   },
+  header: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
+},
+backButton: {
+  position: "absolute",
+  left: 0,
+},
   dateText: { color: "#3F51B5", fontWeight: "600" },
   createButton: {
     backgroundColor: "#3F51B5",
