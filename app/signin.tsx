@@ -8,6 +8,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('organizer');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -16,8 +17,16 @@ export default function SignInScreen() {
     try {
       const user = await signInWithEmailAndPassword(auth, email, password)
       if (user) {
-        console.log("user signed in")
+        if(role=='admin'){
+          router.replace('/adminHome' as any)
+        }
+        else if(role=='organizer'){
+           router.replace('/organizerHome' as any)
+        }
+        else if(role=='attendee'){
         router.replace('/attendeeHome')
+        }
+        
       }
     } catch (error: any) {
       console.log(error)
