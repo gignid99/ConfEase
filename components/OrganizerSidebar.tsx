@@ -11,7 +11,7 @@ const menuItems: { label: string; icon: any; route?: string }[] = [
   { label: 'Certificates', icon: 'certificate', route: '/account' },
   { label: 'Settings', icon: 'cog', route: '/account' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
-  { label: 'Sign Out', icon: 'logout', route: '/account' },
+  { label: 'Sign Out', icon: 'logout', route: '/signin' },
 
 ];
 
@@ -21,7 +21,9 @@ export default function OrganizerSidebar({ onClose }: { onClose?: () => void }) 
  const handleMenuItemPress = (item: { label: string; route?: string }) => {
     
     if (item.route) {
-      router.push(item.route as any);
+         if(item.route=='/signin'){ router.replace(item.route)}
+        else
+          {router.push(item.route as any);}
     }
     if (onClose) onClose();
   };

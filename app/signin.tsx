@@ -8,7 +8,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('organizer');
+  const [role, setRole] = useState('admin');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

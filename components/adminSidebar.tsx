@@ -6,8 +6,9 @@ import { useRouter } from 'expo-router';
 const menuItems: { label: string; icon: any; route?: string }[] = [
   { label: 'My Profile', icon: 'account', route: '/ProfileScreen'},
   { label: 'Calendar', icon: 'calendar' , route: '/calendar'},
+ { label: 'approve organizer', icon: 'filter' , route: '/organizer/aproveorganizer'},
+  { label: 'create event', icon: 'bank' , route: '/create-event'},
   { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
-  { label: 'Nearby Connection', icon: 'account-multiple' , route: '/SendConnection'},
   { label: 'Certificates', icon: 'certificate', route: '/account' },
   { label: 'Settings', icon: 'cog', route: '/account' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
@@ -15,17 +16,20 @@ const menuItems: { label: string; icon: any; route?: string }[] = [
 
 ];
 
-export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
+export default function AdminSidebar({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
  
  const handleMenuItemPress = (item: { label: string; route?: string }) => {
     
     if (item.route) {
         if(item.route=='/signin'){ router.replace(item.route)}
-        else {router.push(item.route as any);}
+        else
+          {router.push(item.route as any);}
     }
     if (onClose) onClose();
   };
+  const obs={ image: require("@/assets/drink.png")
+        }
 
   return (
     <View style={styles.container}>
@@ -33,7 +37,7 @@ export default function ParticipantSidebar({ onClose }: { onClose?: () => void }
       <TouchableOpacity
         style={styles.closeButton}
         onPress={() => {
-          router.push('/attendeeHome');
+          router.push('/adminHome');
           if (onClose) onClose();
         }}
       >
@@ -43,11 +47,11 @@ export default function ParticipantSidebar({ onClose }: { onClose?: () => void }
       {/* Profile Section */}
       <View style={styles.profileSection}>
         <Image
-          source={{ uri: 'https://example.com/profile-placeholder.png' }}
+          source={obs.image }
           style={styles.profileImage}
         />
 
-        <Text style={styles.profileName}>Surya Singh Tomar</Text>
+        <Text style={styles.profileName}>ADMIN PROFILE</Text>
       </View>
 
       {/* Menu Items */}
