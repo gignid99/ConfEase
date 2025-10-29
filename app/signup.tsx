@@ -4,6 +4,8 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export default function SignUpScreen() {
   const [fullName, setFullName] = useState('');
@@ -14,19 +16,59 @@ export default function SignUpScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const signUp = async () => {
-    try {
-      const user = await createUserWithEmailAndPassword(auth, email, password)
-      if (user) 
-      {
-        console.log('Registered:', { fullName, email });
-            router.replace('/signin'); // replace <- push
-      }
-    } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
+
+const signUp = async () => {
+  // 🧩 1️⃣ Validate input fields
+  if (!fullName.trim() || !email.trim() || !password || !confirmPassword || !selectedRole) {
+    alert("Please fill out all fields and select a role.");
+    return;
+  }
+
+  // 🧩 2️⃣ Check valid email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    alert("Please enter a valid email address.");
+    return;
+  }
+
+  // 🧩 3️⃣ Check password length
+  if (password.length < 6) {
+    alert("Password must be at least 6 characters long.");
+    return;
+  }
+
+  // 🧩 4️⃣ Check password match
+  if (password !== confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
+
+  try {
+    // 🧩 5️⃣ Create user with Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // 🧩 6️⃣ Store extra details in Firestore
+    await setDoc(doc(db, "users", user.uid), {
+      fullName,
+      email,
+      role: selectedRole,
+      createdAt: new Date(),
+    });
+
+    console.log("Registered successfully:", { fullName, email, role: selectedRole });
+    alert("Account created successfully!");
+    router.replace("/signin"); // Navigate to Sign In
+  } catch (error: any) {
+    console.error("Sign-up error:", error);
+    if (error.code === "auth/email-already-in-use") {
+      alert("This email is already in use. Please use a different one.");
+    } else {
+      alert("Sign up failed: " + error.message);
     }
-  } 
+  }
+};
+
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

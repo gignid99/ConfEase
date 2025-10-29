@@ -5,34 +5,56 @@ import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../firebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebaseConfig";
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
-  const [role, setRole] = useState('admin');
+  const [role, setRole] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const signIn = async () => {
-    try {
-      const user = await signInWithEmailAndPassword(auth, email, password)
-      if (user) {
-        if(role=='admin'){
-          router.replace('/adminHome' as any)
-        }
-        else if(role=='organizer'){
-           router.replace('/organizerHome' as any)
-        }
-        else if(role=='attendee'){
-        router.replace('/attendeeHome')
-        }
-        
-      }
-    } catch (error: any) {
-      console.log(error)
-      alert('Sign in failed: ' + error.message);
-    }
+
+const signIn = async () => {
+  if (!email.trim() || !password.trim()) {
+    alert("Please enter both email and password.");
+    return;
   }
+
+  try {
+    // Step 1️⃣: Sign in user
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    // Step 2️⃣: Get user data from Firestore
+    const userDoc = await getDoc(doc(db, "users", user.uid));
+
+    if (!userDoc.exists()) {
+      alert("User data not found. Please sign up again.");
+      return;
+    }
+
+    const userData = userDoc.data();
+    const role = userData.role;
+
+    console.log("Logged in as:", role);
+
+    // Step 3️⃣: Navigate based on role
+    if (role === "admin") {
+      router.replace("/adminHome" as any);
+    } else if (role === "organizer") {
+      router.replace("/organizerHome" as any);
+    } else if (role === "attendee") {
+      router.replace("/attendeeHome" as any);
+    } else {
+      alert("Unknown role. Contact support.");
+    }
+  } catch (error: any) {
+    console.error(error);
+    alert("Sign in failed: " + error.message);
+  }
+};
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

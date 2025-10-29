@@ -1,4 +1,4 @@
-// Sidebar.js
+{/*// Sidebar.js
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -73,4 +73,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-});
+});*/}
