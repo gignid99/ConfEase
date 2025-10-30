@@ -37,6 +37,11 @@ const signIn = async () => {
 
     const userData = userDoc.data();
     const role = userData.role;
+    const approved=userData.approve;
+     if (approved=="pending") {
+      alert("your account is pending for admin approvale!");
+      return;
+    }
 
     console.log("Logged in as:", role);
 

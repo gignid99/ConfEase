@@ -1,92 +1,203 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Platform,
+  ActivityIndicator,
+  Alert,
   ScrollView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { db, auth } from "@/firebaseConfig";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
-export default function EditEvent() {
+export default function EditEventScreen() {
+  const { id } = useLocalSearchParams(); // event ID from route
   const router = useRouter();
-  const { id } = useLocalSearchParams(); // Get event ID from URL
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [date, setDate] = useState("");
+  const [location, setLocation] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
 
-  const handleSave = () => {
-    alert(`✅ Event ${id} updated successfully!`);
-    router.back();
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        if (!id) return;
+
+        const eventRef = doc(db, "events", id as string);
+        const eventSnap = await getDoc(eventRef);
+
+        if (eventSnap.exists()) {
+          const data = eventSnap.data();
+          setTitle(data.title || "");
+          setDescription(data.description || "");
+          setDate(data.date || "");
+          setLocation(data.location || "");
+
+          const user = auth.currentUser;
+          if (user && data.createdBy === user.uid) {
+            setIsOwner(true);
+          } else {
+            setIsOwner(false);
+          }
+        } else {
+          Alert.alert("Not Found", "This event no longer exists.");
+          router.back();
+        }
+      } catch (error: any) {
+        Alert.alert("Error", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id]);
+
+  const handleSave = async () => {
+    if (!isOwner) {
+      Alert.alert("Permission Denied", "You are not allowed to edit this event.");
+      return;
+    }
+
+    if (!title || !description || !date || !location) {
+      Alert.alert("Missing Fields", "Please fill out all fields.");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const eventRef = doc(db, "events", id as string);
+      await updateDoc(eventRef, {
+        title,
+        description,
+        date,
+        location,
+        updatedAt: new Date(),
+      });
+
+      Alert.alert("Success", "Event updated successfully!");
+      router.back();
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Event</Text>
-        <View style={{ width: 24 }} />
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text style={{ marginTop: 10, color: "#6b7280" }}>Loading event...</Text>
       </View>
+    );
+  }
 
-      {/* Content */}
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.label}>Event Title</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Enter event title"
-        />
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Edit Event</Text>
 
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, { height: 100 }]}
-          value={description}
-          onChangeText={setDescription}
-          multiline
-          placeholder="Enter event details..."
-        />
+      {!isOwner && (
+        <Text style={styles.warningText}>
+          You don’t have permission to edit this event.
+        </Text>
+      )}
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-          <Text style={styles.saveText}>Save Changes</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Event Title"
+        value={title}
+        editable={isOwner}
+        onChangeText={setTitle}
+      />
+      <TextInput
+        style={[styles.input, { height: 100 }]}
+        placeholder="Description"
+        multiline
+        editable={isOwner}
+        value={description}
+        onChangeText={setDescription}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Date (YYYY-MM-DD)"
+        editable={isOwner}
+        value={date}
+        onChangeText={setDate}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Location"
+        editable={isOwner}
+        value={location}
+        onChangeText={setLocation}
+      />
+
+      {isOwner && (
+        <TouchableOpacity
+          style={[styles.button, saving && { opacity: 0.7 }]}
+          onPress={handleSave}
+          disabled={saving}
+        >
+          <Text style={styles.buttonText}>
+            {saving ? "Saving..." : "Save Changes"}
+          </Text>
         </TouchableOpacity>
-      </ScrollView>
-    </View>
+      )}
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
-  header: {
-    height: 56,
-    backgroundColor: "#6366f1",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: "#f9fafb",
   },
-  headerTitle: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  content: { padding: 20 },
-  label: { fontSize: 14, fontWeight: "600", color: "#333", marginTop: 12 },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 20,
+    textAlign: "center",
+  },
   input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 10,
     backgroundColor: "#fff",
-    padding: 10,
-    marginTop: 6,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
   },
-  saveBtn: {
-    backgroundColor: "#6366f1",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginTop: 20,
+  button: {
+    backgroundColor: "#2563eb",
+    padding: 15,
+    borderRadius: 8,
     alignItems: "center",
+    marginTop: 10,
   },
-  saveText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f9fafb",
+  },
+  warningText: {
+    color: "#dc2626",
+    fontSize: 14,
+    textAlign: "center",
+    marginBottom: 10,
+  },
 });

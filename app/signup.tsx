@@ -14,6 +14,7 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState(''); // 'organizer' or 'attendee'
   const [showPassword, setShowPassword] = useState(false);
+   const [approve, setApprove] = useState('approve');
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 
@@ -53,6 +54,7 @@ const signUp = async () => {
       fullName,
       email,
       role: selectedRole,
+      approve,
       createdAt: new Date(),
     });
 
@@ -162,7 +164,7 @@ const signUp = async () => {
                   styles.roleButton,
                   selectedRole === 'organizer' && styles.roleButtonActive
                 ]}
-                onPress={() => setSelectedRole('organizer')}
+                onPress={() =>{ setSelectedRole('organizer'), setApprove('pending')} }// Harcoded for admin
               >
                 <Ionicons name="person-outline" size={24} color={selectedRole === 'organizer' ? "#6366f1" : "#9ca3af"} style={{ marginBottom: 8 }} />
                 <Text
@@ -180,7 +182,7 @@ const signUp = async () => {
                   styles.roleButton,
                   selectedRole === 'attendee' && styles.roleButtonActive
                 ]}
-                onPress={() => setSelectedRole('attendee')}
+                onPress={() => {setSelectedRole('attendee'), setApprove('approve')}}
               >
                 <Ionicons name="people-outline" size={24} color={selectedRole === 'attendee' ? "#6366f1" : "#9ca3af"} style={{ marginBottom: 8 }} />
                 <Text

@@ -1,99 +1,132 @@
-import React, { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { db, auth } from "@/firebaseConfig"; // ✅ adjust your import path
+import {
+  collection,
+  onSnapshot,
+  updateDoc,
+  deleteDoc,
+  doc,
+} from "firebase/firestore";
+import { deleteUser } from "firebase/auth"; // 👈 used for deleting rejected users
 
 interface Organizer {
   id: string;
-  name: string;
+  fullName: string;
   email: string;
-  organization: string;
-  status: string;
+  role: string;
+  approve: string;
 }
 
-export default function OrganizerApprovalScreen() {
-  // Mock organizer data
-  const [organizers, setOrganizers] = useState<Organizer[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@techcon.com",
-      organization: "TechCon 2025",
-      status: "pending",
-    },
-    {
-      id: "2",
-      name: "Alice Smith",
-      email: "alice@devsummit.com",
-      organization: "DevSummit",
-      status: "approved",
-    },
-    {
-      id: "3",
-      name: "Michael Brown",
-      email: "mike@futureevent.com",
-      organization: "Future Event",
-      status: "pending",
-    },
-  ]);
+export default function ApproveOrganizer() {
+  const [organizers, setOrganizers] = useState<Organizer[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleApproval = (id: string, newStatus: "approved" | "rejected") => {
-    setOrganizers((prev) =>
-      prev.map((org) => (org.id === id ? { ...org, status: newStatus } : org))
+  // ✅ Listen to all pending organizers in real-time
+  useEffect(() => {
+    const unsubscribe = onSnapshot(
+      collection(db, "users"),
+      (snapshot) => {
+        const pendingOrganizers = snapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() } as Organizer))
+          .filter(
+            (user) => user.role === "organizer" && user.approve === "pending"
+          );
+
+        setOrganizers(pendingOrganizers);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error fetching organizers:", error);
+        setLoading(false);
+      }
     );
-    Alert.alert("Status Updated", `Organizer ${newStatus}`);
+
+    return () => unsubscribe();
+  }, []);
+
+  // ✅ Approve: only update Firestore
+  const handleApprove = async (id: string) => {
+    try {
+      await updateDoc(doc(db, "users", id), { approve: "approve" });
+      Alert.alert("Approved ✅", "Organizer approved successfully.");
+    } catch (error) {
+      console.error("Approval error:", error);
+      Alert.alert("Error", "Failed to approve organizer.");
+    }
+  };
+
+  // ✅ Reject: delete from Firestore & Auth
+  const handleReject = async (id: string, email: string) => {
+    try {
+      await deleteDoc(doc(db, "users", id)); // ❌ Remove from Firestore
+      // Optionally remove from Firebase Auth (Admin SDK usually needed)
+      // You cannot delete arbitrary users from the client, but you can mark them as rejected instead.
+      Alert.alert("Rejected 🚫", "Organizer removed successfully.");
+    } catch (error) {
+      console.error("Rejection error:", error);
+      Alert.alert("Error", "Failed to remove organizer.");
+    }
   };
 
   const renderOrganizer = ({ item }: { item: Organizer }) => (
     <View style={styles.card}>
       <View style={styles.info}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.fullName}</Text>
         <Text style={styles.email}>{item.email}</Text>
-        <Text style={styles.org}>{item.organization}</Text>
-        <Text
-          style={[
-            styles.status,
-            item.status === "approved"
-              ? styles.approved
-              : item.status === "rejected"
-              ? styles.rejected
-              : styles.pending,
-          ]}
-        >
-          {item.status.toUpperCase()}
+        <Text style={styles.role}>Role: {item.role}</Text>
+        <Text style={[styles.status, styles.pending]}>
+          {item.approve.toUpperCase()}
         </Text>
       </View>
 
-      {item.status === "pending" && (
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#22c55e" }]}
-            onPress={() => handleApproval(item.id, "approved")}
-          >
-            <Ionicons name="checkmark-circle" size={20} color="#fff" />
-            <Text style={styles.btnText}>Approve</Text>
-          </TouchableOpacity>
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#22c55e" }]}
+          onPress={() => handleApprove(item.id)}
+        >
+          <Ionicons name="checkmark-circle" size={20} color="#fff" />
+          <Text style={styles.btnText}>Approve</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#ef4444" }]}
-            onPress={() => handleApproval(item.id, "rejected")}
-          >
-            <Ionicons name="close-circle" size={20} color="#fff" />
-            <Text style={styles.btnText}>Reject</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#ef4444" }]}
+          onPress={() => handleReject(item.id, item.email)}
+        >
+          <Ionicons name="close-circle" size={20} color="#fff" />
+          <Text style={styles.btnText}>Reject</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text>Loading organizers...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Organizer Approvals (Test Mode)</Text>
+      <Text style={styles.title}>Organizer Approvals</Text>
 
       <FlatList
         data={organizers}
         keyExtractor={(item) => item.id}
         renderItem={renderOrganizer}
-        ListEmptyComponent={<Text style={styles.empty}>No organizers found</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>No pending organizers</Text>}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
     </View>
@@ -116,10 +149,8 @@ const styles = StyleSheet.create({
   info: { marginBottom: 10 },
   name: { fontSize: 18, fontWeight: "700", color: "#111827" },
   email: { fontSize: 14, color: "#6b7280", marginTop: 2 },
-  org: { fontSize: 14, color: "#4b5563", marginTop: 4 },
+  role: { fontSize: 14, color: "#4b5563", marginTop: 4 },
   status: { fontSize: 13, fontWeight: "600", marginTop: 6 },
-  approved: { color: "#16a34a" },
-  rejected: { color: "#dc2626" },
   pending: { color: "#ca8a04" },
   actions: { flexDirection: "row", justifyContent: "space-between", marginTop: 10 },
   button: {
@@ -132,4 +163,5 @@ const styles = StyleSheet.create({
   },
   btnText: { color: "#fff", fontWeight: "600" },
   empty: { textAlign: "center", color: "#6b7280", marginTop: 20 },
+  loader: { flex: 1, justifyContent: "center", alignItems: "center" },
 });
