@@ -1,23 +1,61 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { db } from "@/firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function Participants() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams(); // eventId from previous page
+  const [participants, setParticipants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const participants = [
-    { id: "1", name: "John Doe", email: "john@example.com" },
-    { id: "2", name: "Jane Smith", email: "jane@example.com" },
-    { id: "3", name: "Alex Kumar", email: "alex@example.com" },
-  ];
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchParticipants = async () => {
+      try {
+        // Query registrations for this event
+        const q = query(
+          collection(db, "registrations"),
+          where("eventId", "==", id)
+        );
+        const snapshot = await getDocs(q);
+        const usersList: any[] = [];
+
+        // For each registration, fetch user info from "users" collection
+        for (const docSnap of snapshot.docs) {
+          const { userId } = docSnap.data();
+          const userDoc = await getDocs(
+            query(collection(db, "users"), where("__name__", "==", userId))
+          );
+          userDoc.forEach((u) => {
+            usersList.push({
+              id: u.id,
+              name: u.data().name,
+              email: u.data().email,
+            });
+          });
+        }
+
+        setParticipants(usersList);
+      } catch (error) {
+        console.error("Error fetching participants:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchParticipants();
+  }, [id]);
 
   return (
     <View style={styles.container}>
@@ -30,22 +68,30 @@ export default function Participants() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Participants List */}
-      <FlatList
-        data={participants}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Ionicons name="person-circle" size={36} color="#6366f1" />
-            <View style={{ marginLeft: 10, flex: 1 }}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.email}>{item.email}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#6366f1" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={participants}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <Ionicons name="person-circle" size={36} color="#6366f1" />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+               <Text style={styles.email}>{item.email}</Text>
+              </View>
             </View>
-          </View>
-        )}
-        ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-      />
+          )}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          ListEmptyComponent={() => (
+            <Text style={{ textAlign: "center", marginTop: 20, color: "#6b7280" }}>
+              No participants found.
+            </Text>
+          )}
+        />
+      )}
     </View>
   );
 }

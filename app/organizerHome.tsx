@@ -86,17 +86,30 @@ export default function OrganizerHome() {
 
     return (
       <View style={styles.eventCard}>
-        <Image
-          source={require("@/assets/ball.png")}
-          style={styles.eventImage}
-          resizeMode="cover"
-        />
+        {item.imageUrl ? (
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={styles.eventImage}
+            resizeMode="cover"
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <Ionicons name="image-outline" size={40} color="#9ca3af" />
+          </View>
+        )}
+
         <View style={styles.eventInfo}>
           <Text style={styles.dateText}>{item.date}</Text>
           <Text style={styles.eventTitle}>{item.title}</Text>
-          <Text style={{ color: "#6b7280", marginBottom: 10 }}>
-            {item.location}
+
+          <Text style={styles.eventDetail}>
+            🕓 {item.startTime} → {item.endTime}
           </Text>
+          <Text style={styles.eventDetail}>📍 {item.location}</Text>
+
+          {item.description ? (
+            <Text style={styles.eventDescription}>{item.description}</Text>
+          ) : null}
 
           {isOwner ? (
             <View style={styles.buttonRow}>
@@ -106,6 +119,7 @@ export default function OrganizerHome() {
               >
                 <Text style={styles.btnText}>Edit</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={styles.participantBtn}
                 onPress={() =>
@@ -114,6 +128,7 @@ export default function OrganizerHome() {
               >
                 <Text style={styles.btnText}>Participants</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[styles.deleteBtn]}
                 onPress={() => handleDelete(item.id)}
@@ -222,29 +237,65 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 2, height: 0 },
     shadowRadius: 8,
   },
+
   eventCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
     flexDirection: "row",
+    alignItems: "flex-start",
     padding: 12,
-    alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 2,
   },
   eventImage: {
-    width: 70,
-    height: 70,
+    width: 80,
+    height: 80,
     borderRadius: 12,
     marginRight: 12,
   },
+  imagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 12,
+    marginRight: 12,
+    backgroundColor: "#f3f4f6",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   eventInfo: { flex: 1 },
-  dateText: { fontSize: 12, color: "#6366f1", fontWeight: "600", marginBottom: 6 },
-  eventTitle: { fontSize: 15, fontWeight: "700", color: "#111827", marginBottom: 10 },
-  buttonRow: { flexDirection: "row", gap: 8, alignItems: "center" },
+  dateText: {
+    fontSize: 13,
+    color: "#4f46e5",
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  eventTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 6,
+  },
+  eventDetail: {
+    color: "#6b7280",
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  eventDescription: {
+    color: "#374151",
+    fontSize: 13,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    gap: 8,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
   editBtn: {
-    backgroundColor: "#3d0af6ff",
+    backgroundColor: "#3b82f6",
     paddingVertical: 6,
     paddingHorizontal: 14,
     borderRadius: 20,
@@ -260,5 +311,5 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
-  btnText: { color: "#f5dd0cff", fontSize: 13, fontWeight: "600" },
+  btnText: { color: "#fff", fontSize: 13, fontWeight: "600" },
 });

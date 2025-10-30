@@ -5,73 +5,87 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Platform,
+  ScrollView,
   Image,
   Alert,
-  ScrollView,
+  Platform,
 } from "react-native";
+import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
+import { useRouter } from "expo-router";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db, auth, storage } from "@/firebaseConfig";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-export default function CreateEventScreen() {
+export default function CreateEvent() {
   const router = useRouter();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState(new Date());
-  const [showPicker, setShowPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [image, setImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Pick image from gallery
-  const pickImage = async () => {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      alert("Permission to access gallery is required!");
-      return;
-    }
+  const hours = Array.from({ length: 12 }, (_, i) =>
+    (i + 1).toString().padStart(2, "0")
+  );
+  const ampm = ["AM", "PM"];
 
+  const [startHour, setStartHour] = useState("09");
+  const [startAmPm, setStartAmPm] = useState("AM");
+  const [endHour, setEndHour] = useState("10");
+  const [endAmPm, setEndAmPm] = useState("AM");
+
+  // ✅ Convert 12h to 24h to compare
+  const to24h = (h: string, p: string) => {
+    let hr = parseInt(h);
+    if (p === "PM" && hr !== 12) hr += 12;
+    if (p === "AM" && hr === 12) hr = 0;
+    return hr;
+  };
+
+  const validateTimes = (sh: string, sp: string, eh: string, ep: string) => {
+    const start = to24h(sh, sp);
+    const end = to24h(eh, ep);
+    if (end <= start) {
+      Alert.alert("Invalid Time", "End time must be later than start time.");
+      setEndHour(((start % 12) + 1).toString().padStart(2, "0"));
+      setEndAmPm(start >= 11 && start < 23 ? (sp === "AM" ? "PM" : "AM") : sp);
+    }
+  };
+
+  const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
+    if (!result.canceled) setImage(result.assets[0].uri);
   };
 
-  // Date picker change
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowPicker(false);
+  const onDateChange = (_: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
     if (selectedDate) setDate(selectedDate);
   };
 
-  // Create event and upload image to Firebase
   const handleCreateEvent = async () => {
     if (!title || !description || !location) {
-      Alert.alert("Missing Fields", "Please fill all fields before submitting.");
+      Alert.alert("Missing Fields", "Please fill all details.");
+      return;
+    }
+
+    const user = auth.currentUser;
+    if (!user) {
+      Alert.alert("Error", "Please login first.");
       return;
     }
 
     setLoading(true);
     try {
-      const user = auth.currentUser;
-      if (!user) {
-        Alert.alert("Error", "You must be logged in as an organizer.");
-        return;
-      }
-
       let imageUrl = "";
       if (image) {
         const response = await fetch(image);
@@ -81,163 +95,247 @@ export default function CreateEventScreen() {
         imageUrl = await getDownloadURL(imageRef);
       }
 
+      const formattedDate = `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`;
+
+      const startTime = `${formattedDate} : ${startHour}:00 ${startAmPm}`;
+      const endTime = `${formattedDate} : ${endHour}:00 ${endAmPm}`;
+
       await addDoc(collection(db, "events"), {
         title,
         description,
         location,
-        date: date.toISOString(),
+        date: formattedDate,
+        startTime,
+        endTime,
         imageUrl,
         createdBy: user.uid,
         createdAt: serverTimestamp(),
-        status: "active",
       });
 
       Alert.alert("✅ Success", "Event created successfully!");
-      setTitle("");
-      setDescription("");
-      setLocation("");
-      setImage(null);
       router.back();
-    } catch (error: any) {
-      console.error(error);
-      Alert.alert("Error", error.message);
+    } catch (e: any) {
+      console.error(e);
+      Alert.alert("Error", e.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" backgroundColor="#F9F9FF" />
+  <View style={styles.screen}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.title}>Create Event</Text>
+        <Text style={styles.headerTitle}>Create Event</Text>
+        <View style={{ width: 24 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.label}>Event Title</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter event title..."
-          value={title}
-          onChangeText={setTitle}
+      {/* Inputs */}
+      <Text style={styles.label}>Title</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+        placeholder="Event title"
+      />
+
+      <Text style={styles.label}>Description</Text>
+      <TextInput
+        style={[styles.input, { height: 100 }]}
+        multiline
+        value={description}
+        onChangeText={setDescription}
+        placeholder="Event description"
+      />
+
+      <Text style={styles.label}>Location</Text>
+      <TextInput
+        style={styles.input}
+        value={location}
+        onChangeText={setLocation}
+        placeholder="Enter location"
+      />
+
+      {/* Date */}
+      <Text style={styles.label}>Date</Text>
+      <TouchableOpacity
+        style={styles.dateButton}
+        onPress={() => setShowDatePicker(true)}
+      >
+        <Text style={styles.dateText}>{date.toDateString()}</Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display={Platform.OS === "ios" ? "inline" : "default"}
+          onChange={onDateChange}
         />
+      )}
 
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, { height: 100 }]}
-          placeholder="Enter event details..."
-          multiline
-          value={description}
-          onChangeText={setDescription}
-        />
+      {/* Time */}
+      <Text style={styles.label}>Time (Start → End)</Text>
+      <View style={styles.timeRow}>
+        <View style={styles.timeBox}>
+          <Picker
+            selectedValue={startHour}
+            onValueChange={(v) => {
+              setStartHour(v);
+              validateTimes(v, startAmPm, endHour, endAmPm);
+            }}
+          >
+            {hours.map((h) => (
+              <Picker.Item key={h} label={`${h}:00`} value={h} />
+            ))}
+          </Picker>
+          <Picker
+            selectedValue={startAmPm}
+            onValueChange={(v) => {
+              setStartAmPm(v);
+              validateTimes(startHour, v, endHour, endAmPm);
+            }}
+          >
+            {ampm.map((a) => (
+              <Picker.Item key={a} label={a} value={a} />
+            ))}
+          </Picker>
+        </View>
 
-        <Text style={styles.label}>Upload Image</Text>
-        <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
-          <Text style={styles.uploadText}>{image ? "Image Selected ✅" : "Choose Image"}</Text>
-        </TouchableOpacity>
-        {image && <Image source={{ uri: image }} style={styles.previewImage} />}
+        <Text style={{ marginHorizontal: 8, fontWeight: "600" }}>→</Text>
 
-        <Text style={styles.label}>Location</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter location..."
-          value={location}
-          onChangeText={setLocation}
-        />
+        <View style={styles.timeBox}>
+          <Picker
+            selectedValue={endHour}
+            onValueChange={(v) => {
+              setEndHour(v);
+              validateTimes(startHour, startAmPm, v, endAmPm);
+            }}
+          >
+            {hours.map((h) => (
+              <Picker.Item key={h} label={`${h}:00`} value={h} />
+            ))}
+          </Picker>
+          <Picker
+            selectedValue={endAmPm}
+            onValueChange={(v) => {
+              setEndAmPm(v);
+              validateTimes(startHour, startAmPm, endHour, v);
+            }}
+          >
+            {ampm.map((a) => (
+              <Picker.Item key={a} label={a} value={a} />
+            ))}
+          </Picker>
+        </View>
+      </View>
 
-        <Text style={styles.label}>Date</Text>
-        <TouchableOpacity style={styles.dateButton} onPress={() => setShowPicker(true)}>
-          <Text style={styles.dateText}>{date.toDateString()}</Text>
-        </TouchableOpacity>
+      {/* Image Upload */}
+      <Text style={styles.label}>Image</Text>
+      <TouchableOpacity onPress={pickImage} style={styles.uploadButton}>
+        <Text style={styles.uploadText}>
+          {image ? "✅ Image Selected" : "Upload Image"}
+        </Text>
+      </TouchableOpacity>
+      {image && <Image source={{ uri: image }} style={styles.preview} />}
 
-        {showPicker && (
-          <DateTimePicker
-            value={date}
-            mode="date"
-            display={Platform.OS === "ios" ? "inline" : "default"}
-            onChange={onDateChange}
-          />
-        )}
+      {/* Submit */}
+      <TouchableOpacity
+        onPress={handleCreateEvent}
+        style={[styles.createButton, loading && { opacity: 0.6 }]}
+        disabled={loading}
+      >
+        <Text style={styles.createText}>
+          {loading ? "Creating..." : "Create Event"}
+        </Text>
+      </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.createButton, loading && { opacity: 0.6 }]}
-          onPress={handleCreateEvent}
-          disabled={loading}
-        >
-          <Text style={styles.createText}>{loading ? "Creating..." : "Create Event"}</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
-  );
+      {/* bottom safe padding */}
+      <View style={{ height: 40 }} />
+    </ScrollView>
+  </View>
+);
+
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: "#F9F9FF",
-    padding: 20,
-    ...(Platform.OS === "web" && {
-      width: "100%",
-      maxWidth: 400,
-      marginHorizontal: "auto",
-      marginVertical: 40,
-      borderRadius: 16,
-      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-    }),
+    backgroundColor: "#f9fafb", // ✅ fixes black background
+  },
+  container: {
+    padding: 16,
+    paddingBottom: 40,
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
+    justifyContent: "space-between",
+    backgroundColor: "#6366f1",
+    padding: 16,
+    borderRadius: 8,
     marginBottom: 20,
   },
-  backButton: {
-    position: "absolute",
-    left: 0,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#3F51B5",
-  },
-  label: { fontSize: 16, fontWeight: "500", color: "#333", marginTop: 10 },
+  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  label: { marginTop: 10, fontWeight: "600", color: "#111827" },
   input: {
     borderWidth: 1,
-    borderColor: "#DDD",
-    borderRadius: 10,
+    borderColor: "#ddd",
+    borderRadius: 8,
     padding: 10,
     marginTop: 6,
-    backgroundColor: "#FFF",
-    minHeight: 45,
-    textAlignVertical: "top",
+    backgroundColor: "#fff",
+  },
+  dateButton: {
+    backgroundColor: "#e0e7ff",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 6,
+  },
+  dateText: { color: "#3730a3", fontWeight: "600" },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  timeBox: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    overflow: "hidden",
   },
   uploadButton: {
-    backgroundColor: "#E3E7FF",
-    borderRadius: 10,
+    backgroundColor: "#e0e7ff",
     padding: 10,
+    borderRadius: 8,
     marginTop: 6,
     alignItems: "center",
   },
-  uploadText: { color: "#3F51B5", fontWeight: "600" },
-  previewImage: { width: "100%", height: 150, marginTop: 10, borderRadius: 8 },
-  dateButton: {
-    backgroundColor: "#E3E7FF",
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 6,
-    alignItems: "center",
+  uploadText: { color: "#3730a3", fontWeight: "600" },
+  preview: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+    marginTop: 8,
   },
-  dateText: { color: "#3F51B5", fontWeight: "600" },
   createButton: {
-    backgroundColor: "#3F51B5",
-    borderRadius: 12,
+    backgroundColor: "#6366f1",
     padding: 14,
+    borderRadius: 8,
     alignItems: "center",
-    marginTop: 25,
+    marginTop: 20,
   },
-  createText: { color: "#FFF", fontSize: 18, fontWeight: "700" },
+  createText: { color: "#fff", fontSize: 16, fontWeight: "700" },
 });

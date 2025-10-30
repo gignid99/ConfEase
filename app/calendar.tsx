@@ -1,35 +1,76 @@
-import React from "react";
-import { 
-  View, 
-  Text, 
-  ScrollView, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Platform 
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Platform,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { db } from "../firebaseConfig";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
+
+interface EventType {
+  id: string;
+  title: string;
+  date: string; // "YYYY-MM-DD"
+  startTime: string;
+  endTime: string;
+  location: string;
+  description: string;
+  imageUrl?: string;
+}
 
 export default function CalendarScreen() {
   const router = useRouter();
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [days, setDays] = useState<string[]>([]);
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
-  const events = [
-    { time: "08:00 am", title: "Tech Conference", color: "#c9e8e0" },
-    { time: "09:45 am", title: "AI Conference", color: "#fce7e1" },
-    { time: "10:50 am", title: "Online meeting", color: "#f9d4d4" },
-    { time: "02:40 pm", title: "Workshop", color: "#ebd6f9" },
-    { time: "04:00 pm", title: "Skype interview", color: "#cce4f9" },
-    { time: "06:00 pm", title: "Team Sync", color: "#d0d5d9" },
-  ];
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const q = query(collection(db, "events"), orderBy("date", "asc"));
+        const snapshot = await getDocs(q);
 
-  const days = ["Thu 26", "Fri 27", "Sat 28", "Sun 29", "Mon 30", "Tue 31", "Wed 01"];
+        const eventsData: EventType[] = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || "",
+            date: data.date || "",
+            startTime: data.startTime || "",
+            endTime: data.endTime || "",
+            location: data.location || "",
+            description: data.description || "",
+            imageUrl: data.imageUrl || "",
+          };
+        });
+
+        setEvents(eventsData);
+
+        const uniqueDays = Array.from(new Set(eventsData.map((e) => e.date)));
+        setDays(uniqueDays);
+        if (uniqueDays.length > 0) setSelectedDay(uniqueDays[0]);
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  // Filter events by selected day
+  const filteredEvents = selectedDay
+    ? events.filter((e) => e.date === selectedDay)
+    : events;
 
   return (
     <View
-      style={[
-        styles.container,
-        Platform.OS === "web" && styles.webContainer, // ✅ only affects web
-      ]}
+      style={[styles.container, Platform.OS === "web" && styles.webContainer]}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -39,25 +80,67 @@ export default function CalendarScreen() {
         <Text style={styles.headerTitle}>Calendar</Text>
       </View>
 
-      {/* Days Scroll */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.daysContainer}>
+      {/* Date Filter */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.daysContainer}
+      >
         {days.map((day, index) => (
-          <View key={index} style={[styles.dayBox, index === 0 && styles.activeDay]}>
-            <Text style={[styles.dayText, index === 0 && styles.activeDayText]}>{day}</Text>
-          </View>
+          <TouchableOpacity
+            key={index}
+            onPress={() => setSelectedDay(day)}
+            style={[
+              styles.dayBox,
+              selectedDay === day && styles.activeDay,
+            ]}
+          >
+            <Text
+              style={[
+                styles.dayText,
+                selectedDay === day && styles.activeDayText,
+              ]}
+            >
+              {day}
+            </Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
       {/* Events */}
       <ScrollView style={styles.eventList}>
-        {events.map((event, index) => (
-          <View key={index} style={styles.eventRow}>
-            <Text style={styles.timeText}>{event.time}</Text>
-            <View style={[styles.eventCard, { backgroundColor: event.color }]}>
-              <Text style={styles.eventTitle}>{event.title}</Text>
+        {filteredEvents.length > 0 ? (
+          filteredEvents.map((event) => (
+            <View key={event.id} style={styles.eventCard}>
+              {event.imageUrl ? (
+                <Image
+                  source={{ uri: event.imageUrl }}
+                  style={styles.eventImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Ionicons name="image-outline" size={40} color="#9ca3af" />
+                </View>
+              )}
+
+              <View style={styles.eventContent}>
+                <Text style={styles.eventTitle}>{event.title}</Text>
+                <Text style={styles.eventDate}>
+                  {event.date} | {event.startTime} - {event.endTime}
+                </Text>
+                <Text style={styles.eventLocation}>
+                  📍 {event.location}
+                </Text>
+                <Text style={styles.eventDescription}>
+                  {event.description}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.noEventText}>No events for this date</Text>
+        )}
       </ScrollView>
     </View>
   );
@@ -65,17 +148,14 @@ export default function CalendarScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f8f9fb" },
-
-  // ✅ This only applies when running on web
   webContainer: {
-    maxWidth: 500, // limit width
-    alignSelf: "center", // center content
+    maxWidth: 600,
+    alignSelf: "center",
     borderWidth: 1,
     borderColor: "#e5e7eb",
     borderRadius: 12,
     marginVertical: 20,
   },
-
   header: {
     backgroundColor: "#4f46e5",
     flexDirection: "row",
@@ -85,9 +165,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: Platform.OS === "web" ? 12 : 0,
     borderTopRightRadius: Platform.OS === "web" ? 12 : 0,
   },
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600", marginLeft: 10 },
+  headerTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+    marginLeft: 10,
+  },
   daysContainer: {
-    flexGrow: 0,
     backgroundColor: "#f8f9fb",
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -103,12 +187,52 @@ const styles = StyleSheet.create({
   dayText: { color: "#374151", fontWeight: "600" },
   activeDayText: { color: "#fff" },
   eventList: { padding: 16 },
-  eventRow: { marginBottom: 20 },
-  timeText: { color: "#6b7280", marginBottom: 6, fontWeight: "500" },
   eventCard: {
-    borderRadius: 10,
-    padding: 16,
-    elevation: 1,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: "hidden",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
   },
-  eventTitle: { fontSize: 16, fontWeight: "600", color: "#374151" },
+  eventImage: {
+    width: "100%",
+    height: 160,
+  },
+  imagePlaceholder: {
+    width: "100%",
+    height: 160,
+    backgroundColor: "#f3f4f6",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  eventContent: {
+    padding: 12,
+  },
+  eventTitle: { fontSize: 18, fontWeight: "700", color: "#111827" },
+  eventDate: {
+    fontSize: 14,
+    color: "#6b7280",
+    marginTop: 4,
+    marginBottom: 6,
+  },
+  eventLocation: {
+    fontSize: 14,
+    color: "#4b5563",
+    marginBottom: 6,
+  },
+  eventDescription: {
+    fontSize: 14,
+    color: "#374151",
+    lineHeight: 20,
+  },
+  noEventText: {
+    textAlign: "center",
+    marginTop: 40,
+    fontSize: 16,
+    color: "#6b7280",
+  },
 });
