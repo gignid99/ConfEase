@@ -1,9 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage"
+import { initializeAuth, browserLocalPersistence } from "firebase/auth";
+import ReactNativeAsyncStorage, { AsyncStorageStatic } from "@react-native-async-storage/async-storage"
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,11 +22,29 @@ const firebaseConfig = {
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-export const auth= initializeAuth(app, {persistence:getReactNativePersistence(ReactNativeAsyncStorage)});
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// export const auth= initializeAuth(app, {persistence:getReactNativePersistence(ReactNativeAsyncStorage)});
 
+
+// Updated code for persistence
+let auth;
+
+if (Platform.OS === "web") {
+  // ✅ Web persistence
+  auth = initializeAuth(app, {
+    persistence: browserLocalPersistence,
+  });
+} else {
+  // ✅ Mobile persistence
+  auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+  });
+}
+
+
+export { auth };
 
 
 
@@ -70,3 +91,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export default app;
 */}
+
+function getReactNativePersistence(AsyncStorage: AsyncStorageStatic): import("firebase/auth").Persistence | import("firebase/auth").Persistence[] | undefined {
+  throw new Error("Function not implemented.");
+}
