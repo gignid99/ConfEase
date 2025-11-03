@@ -164,7 +164,7 @@ const signUp = async () => {
                   styles.roleButton,
                   selectedRole === 'organizer' && styles.roleButtonActive
                 ]}
-                onPress={() =>{ setSelectedRole('organizer'), setApprove('pending')} }// Harcoded for admin
+                onPress={() =>{ setSelectedRole('organizer'), setApprove('pending')} }// Hardcoded for admin
               >
                 <Ionicons name="person-outline" size={24} color={selectedRole === 'organizer' ? "#6366f1" : "#9ca3af"} style={{ marginBottom: 8 }} />
                 <Text
