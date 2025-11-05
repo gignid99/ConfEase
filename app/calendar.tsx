@@ -162,6 +162,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 15,
+    marginTop:10,
     borderTopLeftRadius: Platform.OS === "web" ? 12 : 0,
     borderTopRightRadius: Platform.OS === "web" ? 12 : 0,
   },
@@ -173,8 +174,9 @@ const styles = StyleSheet.create({
   },
   daysContainer: {
     backgroundColor: "#f8f9fb",
-    paddingVertical: 10,
+    paddingVertical: 1,
     paddingHorizontal: 10,
+    rowGap: 8,
   },
   dayBox: {
     paddingVertical: 10,
@@ -182,6 +184,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#e5e7eb",
     borderRadius: 20,
     marginRight: 8,
+    minWidth: 80,
+    minHeight:50,
+    maxHeight:50
   },
   activeDay: { backgroundColor: "#6366f1" },
   dayText: { color: "#374151", fontWeight: "600" },
