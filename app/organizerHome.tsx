@@ -9,41 +9,67 @@ import {
   Animated,
   ScrollView,
   Alert,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import OrganizerSidebar from "../components/OrganizerSidebar";
 import { db, auth } from "@/firebaseConfig";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { onSnapshot, collection, deleteDoc, doc } from "firebase/firestore";
+import { Picker } from "@react-native-picker/picker";
 
 export default function OrganizerHome() {
   const router = useRouter();
   const slide = useRef(new Animated.Value(-300)).current;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterType, setFilterType] = useState("title");
 
-  // Fetch all events
+  const user = auth.currentUser;
+
+  // 🔹 Fetch all events in real time
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "events"));
+    const eventsRef = collection(db, "events");
+    const unsubscribe = onSnapshot(
+      eventsRef,
+      (snapshot) => {
         const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
         setEvents(data);
-      } catch (error) {
-        console.error("Error fetching events:", error);
-      } finally {
+        setFilteredEvents(data);
+        setLoading(false);
+      },
+      (error) => {
+        console.error("Error listening to events:", error);
         setLoading(false);
       }
-    };
+    );
 
-    fetchEvents();
+    return () => unsubscribe();
   }, []);
 
-  const user = auth.currentUser;
+  // 🔍 Apply search filter
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredEvents(events);
+    } else {
+      const filtered = events.filter((e) => {
+        const value =
+          filterType === "title"
+            ? e.title
+            : filterType === "department"
+            ? e.department
+            : e.location;
+        return (value ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+      });
+      setFilteredEvents(filtered);
+    }
+  }, [searchQuery, filterType, events]);
 
   const handleDelete = async (id: string) => {
     Alert.alert("Delete Event", "Are you sure you want to delete this event?", [
@@ -64,6 +90,7 @@ export default function OrganizerHome() {
     ]);
   };
 
+  // Drawer animations
   const openDrawer = () => {
     setDrawerOpen(true);
     Animated.timing(slide, {
@@ -81,6 +108,7 @@ export default function OrganizerHome() {
     }).start(() => setDrawerOpen(false));
   };
 
+  // Render event
   const renderEvent = ({ item }: { item: any }) => {
     const isOwner = user && item.createdBy === user.uid;
 
@@ -174,6 +202,36 @@ export default function OrganizerHome() {
         <OrganizerSidebar onClose={closeDrawer} />
       </Animated.View>
 
+      {/* 🔍 Filter Section */}
+      <View style={{ padding: 12, backgroundColor: "#eef2ff" }}>
+        <TextInput
+          style={{
+            backgroundColor: "#fff",
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+            borderRadius: 8,
+            marginBottom: 8,
+            height: 52,
+          }}
+          placeholder="Search events..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <Picker
+          selectedValue={filterType}
+          onValueChange={(v) => setFilterType(v)}
+          style={{
+            backgroundColor: "#fff",
+            borderRadius: 8,
+            height: 52,
+          }}
+        >
+          <Picker.Item label="Filter by Title" value="title" />
+          <Picker.Item label="Filter by Department" value="department" />
+          <Picker.Item label="Filter by Location" value="location" />
+        </Picker>
+      </View>
+
       {/* Event List */}
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}
@@ -182,13 +240,13 @@ export default function OrganizerHome() {
           <Text style={{ textAlign: "center", color: "#6b7280" }}>
             Loading events...
           </Text>
-        ) : events.length === 0 ? (
+        ) : filteredEvents.length === 0 ? (
           <Text style={{ textAlign: "center", color: "#6b7280" }}>
             No events found.
           </Text>
         ) : (
           <FlatList
-            data={events}
+            data={filteredEvents}
             keyExtractor={(item) => item.id}
             renderItem={renderEvent}
             scrollEnabled={false}
