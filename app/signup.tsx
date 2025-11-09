@@ -56,6 +56,9 @@ const signUp = async () => {
       role: selectedRole,
       approve,
       createdAt: new Date(),
+      githubUrl: "",
+      linkedinUrl: "",
+      about: "",
     });
 
     console.log("Registered successfully:", { fullName, email, role: selectedRole });
