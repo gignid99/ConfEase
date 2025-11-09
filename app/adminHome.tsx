@@ -8,17 +8,19 @@ import {
   Image,
   Animated,
   ScrollView,
-  Alert,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { onSnapshot, collection, deleteDoc, doc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
 import AdminSidebar from "../components/adminSidebar";
+import { Picker } from "@react-native-picker/picker";
 
 interface EventItem {
   id: string;
   title: string;
+  department?: string;
   date: string;
   startTime: string;
   endTime: string;
@@ -32,18 +34,24 @@ export default function AdminHome() {
   const slide = useRef(new Animated.Value(-300)).current;
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [filteredEvents, setFilteredEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Filter states
+  const [filterType, setFilterType] = useState<"title" | "department" | "location">("title");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // 🔹 Fetch events from Firestore
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "events"));
-        const fetchedEvents: EventItem[] = querySnapshot.docs.map((docSnap) => {
+    const unsubscribe = onSnapshot(
+      collection(db, "events"),
+      (snapshot) => {
+        const fetchedEvents: EventItem[] = snapshot.docs.map((docSnap) => {
           const data = docSnap.data();
           return {
             id: docSnap.id,
             title: data.title || "Untitled Event",
+            department: data.department || "General",
             date: data.date || "",
             startTime: data.startTime || "",
             endTime: data.endTime || "",
@@ -52,44 +60,48 @@ export default function AdminHome() {
             imageUrl: data.imageUrl || "",
           };
         });
-
         setEvents(fetchedEvents);
-      } catch (error) {
+        setFilteredEvents(fetchedEvents);
+        setLoading(false);
+      },
+      (error) => {
         console.error("Error fetching events:", error);
-      } finally {
         setLoading(false);
       }
-    };
-
-    fetchEvents();
+    );
+    return () => unsubscribe();
   }, []);
 
-  // 🔹 Delete event from Firestore
+  // 🔹 Handle Filtering
+useEffect(() => {
+  if (!searchQuery.trim()) {
+    setFilteredEvents(events);
+  } else {
+    const filtered = events.filter((e) => {
+      const value =
+        filterType === "title"
+          ? e.title
+          : filterType === "department"
+          ? e.department
+          : e.location;
+      return (value ?? "").toLowerCase().includes(searchQuery.toLowerCase());
+    });
+    setFilteredEvents(filtered);
+  }
+}, [searchQuery, filterType, events]);
+
+
+  // 🔹 Delete event
   const handleDelete = async (id: string) => {
-    Alert.alert(
-      "Delete Event",
-      "Are you sure you want to delete this event?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, "events", id));
-              setEvents((prev) => prev.filter((e) => e.id !== id));
-              Alert.alert("Deleted", "Event removed successfully.");
-            } catch (error) {
-              console.error("Error deleting event:", error);
-              Alert.alert("Error", "Failed to delete event.");
-            }
-          },
-        },
-      ]
-    );
+    try {
+      await deleteDoc(doc(db, "events", id));
+      setEvents((prev) => prev.filter((e) => e.id !== id));
+    } catch (error) {
+      console.error("Error deleting event:", error);
+    }
   };
 
-  // 🔹 Drawer handlers
+  // 🔹 Drawer controls
   const openDrawer = () => {
     setDrawerOpen(true);
     Animated.timing(slide, {
@@ -98,7 +110,6 @@ export default function AdminHome() {
       useNativeDriver: true,
     }).start();
   };
-
   const closeDrawer = () => {
     Animated.timing(slide, {
       toValue: -300,
@@ -107,7 +118,6 @@ export default function AdminHome() {
     }).start(() => setDrawerOpen(false));
   };
 
-  // 🔹 Render each event
   const renderEvent = ({ item }: { item: EventItem }) => (
     <View style={styles.eventCard}>
       <Image
@@ -122,10 +132,10 @@ export default function AdminHome() {
       <View style={styles.eventInfo}>
         <Text style={styles.eventTitle}>{item.title}</Text>
         <Text style={styles.dateText}>{item.date}</Text>
-
         <Text style={styles.eventDetail}>
           🕒 {item.startTime} - {item.endTime}
         </Text>
+        <Text style={styles.eventDetail}>🏛 {item.department}</Text>
         <Text style={styles.eventDetail}>📍 {item.location}</Text>
         <Text style={styles.eventDescription}>{item.description}</Text>
 
@@ -153,7 +163,7 @@ export default function AdminHome() {
 
   return (
     <View style={styles.page}>
-      {/* 🔹 Header */}
+      {/* Header */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.menuBtn} onPress={openDrawer}>
           <Ionicons name="menu" size={22} color="#fff" />
@@ -164,7 +174,7 @@ export default function AdminHome() {
         </TouchableOpacity>
       </View>
 
-      {/* 🔹 Drawer */}
+      {/* Sidebar Drawer */}
       {drawerOpen && (
         <TouchableOpacity
           style={styles.overlay}
@@ -179,19 +189,35 @@ export default function AdminHome() {
         <AdminSidebar onClose={closeDrawer} />
       </Animated.View>
 
-      {/* 🔹 Event List */}
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16 }}>
+      {/* Filter Section */}
+      <View style={styles.filterContainer}>
+        <Picker
+          selectedValue={filterType}
+          style={styles.picker}
+          onValueChange={(value) => setFilterType(value)}
+        >
+          <Picker.Item label="Filter by Title" value="title" />
+          <Picker.Item label="Filter by Department" value="department" />
+          <Picker.Item label="Filter by Location" value="location" />
+        </Picker>
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder={`Search by ${filterType}...`}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+      </View>
+
+      {/* Events List */}
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8 }}>
         {loading ? (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            Loading events...
-          </Text>
-        ) : events.length === 0 ? (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
-            No events found.
-          </Text>
+          <Text style={{ textAlign: "center", marginTop: 20 }}>Loading events...</Text>
+        ) : filteredEvents.length === 0 ? (
+          <Text style={{ textAlign: "center", marginTop: 20 }}>No events found.</Text>
         ) : (
           <FlatList
-            data={events}
+            data={filteredEvents}
             keyExtractor={(item) => item.id}
             renderItem={renderEvent}
             scrollEnabled={false}
@@ -203,10 +229,8 @@ export default function AdminHome() {
   );
 }
 
-// 🔹 Styles
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#f9fafb" },
-
   topBar: {
     height: 56,
     backgroundColor: "#6366f1",
@@ -237,10 +261,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     zIndex: 999,
     elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.12,
-    shadowOffset: { width: 2, height: 0 },
-    shadowRadius: 8,
+  },
+
+  filterContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: "#eef2ff",
+    justifyContent: "space-between",
+  },
+  picker: { flex: 0.5, backgroundColor: "#fff", borderRadius: 8 },
+  searchInput: {
+    flex: 0.5,
+    marginLeft: 8,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 40,
   },
 
   eventCard: {
@@ -254,12 +292,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  eventImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 12,
-    marginRight: 12,
-  },
+  eventImage: { width: 70, height: 70, borderRadius: 12, marginRight: 12 },
   eventInfo: { flex: 1 },
   dateText: { fontSize: 12, color: "#6366f1", fontWeight: "600", marginBottom: 4 },
   eventTitle: { fontSize: 15, fontWeight: "700", color: "#111827", marginBottom: 6 },

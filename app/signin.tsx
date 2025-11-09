@@ -3,10 +3,11 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ScrollView
 import { router } from 'expo-router';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../firebaseConfig';
+import { auth } from '../firebaseConfig'; // added auth now
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
+
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -26,6 +27,7 @@ const signIn = async () => {
     // Step 1️⃣: Sign in user
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
+
 
     // Step 2️⃣: Get user data from Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));

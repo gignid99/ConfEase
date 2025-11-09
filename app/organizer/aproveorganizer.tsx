@@ -18,6 +18,7 @@ import {
   doc,
 } from "firebase/firestore";
 import { deleteUser } from "firebase/auth"; // 👈 used for deleting rejected users
+import { useRouter } from "expo-router";
 
 interface Organizer {
   id: string;
@@ -30,7 +31,7 @@ interface Organizer {
 export default function ApproveOrganizer() {
   const [organizers, setOrganizers] = useState<Organizer[]>([]);
   const [loading, setLoading] = useState(true);
-
+    const router = useRouter();
   // ✅ Listen to all pending organizers in real-time
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -120,7 +121,12 @@ export default function ApproveOrganizer() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Organizer Approvals</Text>
+    <View style={styles.headerRow}>
+  <TouchableOpacity onPress={() => router.back()}>
+    <Ionicons name="arrow-back" size={34} color="#131010ff" />
+  </TouchableOpacity>
+  <Text style={styles.title}>Organizer Approvals</Text>
+</View>
 
       <FlatList
         data={organizers}
@@ -135,7 +141,7 @@ export default function ApproveOrganizer() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9fafb", padding: 20 },
-  title: { fontSize: 22, fontWeight: "700", color: "#111827", marginBottom: 20 },
+  title: { fontSize: 22, fontWeight: "700", color: "#111827", marginBottom: 20, marginLeft:30 },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
@@ -161,6 +167,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 8,
   },
+  headerRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: 10,
+  width: "100%", 
+  backgroundColor: "#dddde7ff",
+  paddingVertical: 14,
+  paddingHorizontal: 0,
+  borderRadius: 12,
+  marginBottom: 20,
+
+},
   btnText: { color: "#fff", fontWeight: "600" },
   empty: { textAlign: "center", color: "#6b7280", marginTop: 20 },
   loader: { flex: 1, justifyContent: "center", alignItems: "center" },
