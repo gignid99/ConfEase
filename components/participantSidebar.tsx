@@ -8,7 +8,7 @@ const menuItems: { label: string; icon: any; route?: string }[] = [
   { label: 'Calendar', icon: 'calendar' , route: '/calendar'},
   { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
   { label: 'Nearby Connection', icon: 'account-multiple', route: '/SendConnection' },
-  { label: 'Scan QR', icon: 'qr-code-scanner', route: '/QRScannerScreen' },
+  { label: 'Scan QR', icon: 'qrcode-scan', route: '/QRScannerScreen' },
   { label: 'Settings', icon: 'cog', route: '/account' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
   { label: 'Sign Out', icon: 'logout', route: '/signin' },

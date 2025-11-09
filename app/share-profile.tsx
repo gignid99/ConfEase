@@ -11,7 +11,7 @@ export default function ShareProfileScreen() {
   const isWeb = Platform.OS === "web";
   const screenWidth = Dimensions.get("window").width;
 
-  const [userData, setUserData] = useState<{ fullName: string; email: string } | null>(null);
+  const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export default function ShareProfileScreen() {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setUserData(docSnap.data() as { fullName: string; email: string });
+          setUserData(docSnap.data());
         } else {
           console.warn("No user data found in Firestore");
         }
@@ -58,10 +58,15 @@ export default function ShareProfileScreen() {
     );
   }
 
+  // 🔹 Build the QR code data
   const qrValue = JSON.stringify({
     uid: auth.currentUser?.uid,
-    fullName: userData.fullName,
-    email: userData.email,
+    fullName: userData.fullName || "",
+    email: userData.email || "",
+    about: userData.about || "No bio added",
+    linkedin: userData.linkedin || "",
+    github: userData.github || "",
+    interests: userData.interests || [],
   });
 
   return (
@@ -76,10 +81,14 @@ export default function ShareProfileScreen() {
 
       {/* Profile Section */}
       <View style={styles.content}>
-        <Image source={{ uri: "https://cdn-icons-png.flaticon.com/512/219/219986.png" }} style={styles.avatar} />
+        <Image
+          source={{ uri: userData.avatar || "https://cdn-icons-png.flaticon.com/512/219/219986.png" }}
+          style={styles.avatar}
+        />
         <Text style={styles.name}>{userData.fullName}</Text>
         <Text style={{ color: "#6b7280", marginBottom: 24 }}>{userData.email}</Text>
 
+        {/* QR Code */}
         <View style={styles.qrContainer}>
           <QRCode value={qrValue} size={180} />
         </View>

@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
   },
   card: {
-    width: Platform.OS === "web" ? 380 : "90%",
-    height: 820, // ✅ reduced total height
+    width: Platform.OS === "web" ? 380 : "100%",
+    height: "90%", 
     backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",

@@ -2,16 +2,17 @@ import React, { useState } from "react";
 import { View, Text, Image, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { auth, db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"about" | "interest">("about");
  const qrshareprofile=()=>{
     router.push('/share-profile');
-
  }
   const user = {
-    name: "pg lab pr ",
+    name: "Minakshi ",
     qrValue: "https://confEase.app/user/check",
     avatar: "https://cdn-icons-png.flaticon.com/512/219/219986.png",
   };
@@ -32,7 +33,7 @@ export default function ProfileScreen() {
           source={require("../assets/images/splash-icon.png")} 
           style={styles.avatar}
         />
-        <Text style={styles.name}>my full name check here</Text>
+        <Text style={styles.name}>Surya</Text>
 
         <TouchableOpacity style={styles.editButton}>
           <Ionicons name="create-outline" size={16} color="#3b5bff" />
