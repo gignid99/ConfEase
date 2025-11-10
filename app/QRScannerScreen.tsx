@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Platform,
+  Alert,
 } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
@@ -32,16 +33,38 @@ export default function QRScannerScreen() {
     );
   }
 
-  const handleBarcodeScanned = ({ data }: { data: string }) => {
+  const handleBarcodeScanned = ({ data }) => {
     setScanned(true);
-    alert(`Scanned QR Code: ${data}`);
+    try {
+      const parsedData = JSON.parse(data);
+
+      // Basic validation
+      if (!parsedData.fullName || !parsedData.email) {
+        Alert.alert("Invalid QR Code", "This QR code does not contain profile data.");
+        setScanned(false);
+        return;
+      }
+
+      // ✅ Navigate to the profile page with scanned data
+      router.push({
+        pathname: "/otherattendeeProfile",
+        params: {
+          fullName: parsedData.fullName,
+          email: parsedData.email,
+          about: parsedData.about || "",
+          github: parsedData.github || "",
+          linkedin: parsedData.linkedin || "",
+        },
+      });
+    } catch (error) {
+      Alert.alert("Invalid QR Code", "This QR code is not properly formatted.");
+      setScanned(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.root}>
-      {/* Compact Centered Card */}
       <View style={styles.card}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color="#fff" />
@@ -49,7 +72,6 @@ export default function QRScannerScreen() {
           <Text style={styles.headerText}>Scan QR Code</Text>
         </View>
 
-        {/* Camera Box */}
         <View style={styles.content}>
           <Text style={styles.title}>Scan Profile QR</Text>
           <View style={styles.cameraContainer}>
@@ -60,9 +82,7 @@ export default function QRScannerScreen() {
             />
           </View>
 
-          <Text style={styles.instruction}>
-            Place the QR Code inside the frame
-          </Text>
+          <Text style={styles.instruction}>Place the QR Code inside the frame</Text>
 
           {scanned && (
             <TouchableOpacity
@@ -82,13 +102,13 @@ export default function QRScannerScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    justifyContent: "center", // ✅ center vertically
+    justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#f2f2f2",
   },
   card: {
     width: Platform.OS === "web" ? 380 : "100%",
-    height: "90%", 
+    height: "90%",
     backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",
@@ -126,9 +146,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#3F51B5",
   },
-  camera: {
-    flex: 1,
-  },
+  camera: { flex: 1 },
   instruction: {
     marginTop: 10,
     fontSize: 13,
@@ -168,8 +186,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     borderRadius: 10,
   },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "600",
-  },
+  buttonText: { color: "#fff", fontWeight: "600" },
 });

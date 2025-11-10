@@ -1,195 +1,91 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { View, Text, StyleSheet, Linking, ScrollView, TouchableOpacity } from "react-native";
+import { useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import QRScannerScreen from "./QRScannerScreen";
-import { push } from "expo-router/build/global-state/routing";
 
 export default function OtherAttendeeProfile() {
-  const router = useRouter();
-
-  const user = {
-    name: "Minakshi",
-    avatar: "https://cdn-icons-png.flaticon.com/512/219/219986.png",
-    about:
-      "I’m a software engineer passionate about AI, mobile apps, and community building.",
-    linkedin: "https://www.linkedin.com/in/johndoe",
-    github: "https://github.com/johndoe",
-    interests: ["AI", "Mobile Development", "Web3", "UI/UX", "Machine Learning"],
-  };
-
-  const screenWidth = Dimensions.get("window").width;
-  const screenHeight = Dimensions.get("window").height;
+  const { fullName, email, about, linkedin, github } = useLocalSearchParams();
 
   return (
-    <View style={styles.outerContainer}>
-      <View
-        style={[
-          styles.mobileContainer,
-          {
-            width: screenWidth < 500 ? screenWidth : 380,
-            height: screenHeight < 800 ? screenHeight : 700,
-          },
-        ]}
-      >
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={styles.container}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() =>push('/QRScannerScreen')}>
-              <Ionicons name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Attendee Profile</Text>
-          </View>
-
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
-            <Image
-              source={{ uri: user.avatar }}
-              style={styles.avatar}
-              resizeMode="cover"
-            />
-            <Text style={styles.name}>{user.name}</Text>
-          </View>
-
-          {/* About Section */}
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.card}>
+        <Text style={styles.name}>{fullName}</Text>
+        <Text style={styles.email}>{email}</Text>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <Text style={styles.aboutText}>{user.about}</Text>
-
-            <Text style={styles.sectionTitle}>Social Profiles</Text>
-            <Text style={styles.socialLink}>
-              <Text style={styles.bold}>LinkedIn: </Text>
-              <Text style={styles.link}>{user.linkedin}</Text>
-            </Text>
-            <Text style={styles.socialLink}>
-              <Text style={styles.bold}>GitHub: </Text>
-              <Text style={styles.link}>{user.github}</Text>
-            </Text>
-          </View>
-
-          {/* Interests Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Interests</Text>
-            <View style={styles.tagContainer}>
-              {user.interests.map((tag, index) => (
-                <View
-                  key={index}
-                  style={[styles.tag, { backgroundColor: colors[index % 5] }]}
-                >
-                  <Text style={styles.tagText}>{tag}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        </ScrollView>
+        <Text style={styles.sectionTitle}>About</Text>
+        <Text style={styles.sectionContent}>
+          {about ? <Text style={styles.about}>{about}</Text> : null}
+        </Text>
       </View>
-    </View>
+        <View style={styles.socialContainer}>
+          {linkedin ? (
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() => Linking.openURL(linkedin)}
+            >
+              <Ionicons name="logo-linkedin" size={22} color="#0077b5" />
+              <Text style={styles.socialText}>LinkedIn</Text>
+            </TouchableOpacity>
+          ) : null}
+
+          {github ? (
+            <TouchableOpacity
+              style={styles.socialButton}
+              onPress={() => Linking.openURL(github)}
+            >
+              <Ionicons name="logo-github" size={22} color="black" />
+              <Text style={styles.socialText}>GitHub</Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+    </ScrollView>
   );
 }
 
-const colors = ["#5A67D8", "#F6AD55", "#F56565", "#9F7AEA", "#38B2AC"];
-
 const styles = StyleSheet.create({
-  outerContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#E5E7EB",
-  },
-  mobileContainer: {
+  container: { flexGrow: 1, justifyContent: "center", alignItems: "center", padding: 20 },
+  card: {
+    width: "100%",
     backgroundColor: "#fff",
-    borderRadius: 20,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
+    borderRadius: 12,
+    padding: 20,
     elevation: 4,
   },
-  container: {
-    paddingBottom: 40,
-    backgroundColor: "#fff",
-  },
-  header: {
-    backgroundColor: "#4F46E5",
+  name: { fontSize: 24, fontWeight: "bold", marginBottom: 8, textAlign: "center" },
+  email: { fontSize: 16, color: "gray", textAlign: "center", marginBottom: 10 },
+  about: { fontSize: 16, textAlign: "center", marginVertical: 10 },
+  socialContainer: { flexDirection: "row", justifyContent: "center", marginTop: 15 },
+  socialButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 15,
+    marginHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
   },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-    marginLeft: 10,
-  },
-  profileSection: {
-    alignItems: "center",
-    marginTop: 15,
-  },
-  avatar: {
-    width: 70, // smaller image width
-    height: 70, // smaller image height
-    borderRadius: 35,
-    backgroundColor: "#E0E0E0",
-  },
-  name: {
-    fontSize: 17,
-    fontWeight: "600",
-    marginTop: 8,
-    color: "#000",
-  },
-  section: {
-    paddingHorizontal: 20,
-    marginTop: 18,
+   section: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 1 },
+    shadowRadius: 3,
+    elevation: 2,
   },
   sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 8,
+    color: "#007bff",
+  },
+  sectionContent: {
     fontSize: 15,
-    fontWeight: "600",
-    color: "#000",
-    marginBottom: 6,
-  },
-  aboutText: {
-    color: "#555",
+    color: "#333",
     lineHeight: 20,
-    marginBottom: 12,
   },
-  socialLink: {
-    color: "#555",
-    marginBottom: 6,
-  },
-  bold: {
-    fontWeight: "600",
-  },
-  link: {
-    color: "#1D4ED8",
-  },
-  tagContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginTop: 6,
-  },
-  tag: {
-    borderRadius: 18,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  tagText: {
-    color: "#fff",
-    fontWeight: "500",
-    fontSize: 13,
-  },
+  socialText: { marginLeft: 6, fontSize: 16, color: "#333" },
 });

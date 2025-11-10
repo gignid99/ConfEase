@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, Dimensions, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Platform,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import QRCode from "react-native-qrcode-svg";
@@ -9,7 +18,6 @@ import { doc, getDoc } from "firebase/firestore";
 export default function ShareProfileScreen() {
   const router = useRouter();
   const isWeb = Platform.OS === "web";
-  const screenWidth = Dimensions.get("window").width;
 
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,15 +66,14 @@ export default function ShareProfileScreen() {
     );
   }
 
-  // 🔹 Build the QR code data
+  // ✅ Use correct field names from Firestore (githubUrl, linkedinUrl)
   const qrValue = JSON.stringify({
     uid: auth.currentUser?.uid,
     fullName: userData.fullName || "",
     email: userData.email || "",
     about: userData.about || "No bio added",
-    linkedin: userData.linkedin || "",
-    github: userData.github || "",
-    interests: userData.interests || [],
+    github: userData.githubUrl || "",
+    linkedin: userData.linkedinUrl || "",
   });
 
   return (
@@ -82,18 +89,28 @@ export default function ShareProfileScreen() {
       {/* Profile Section */}
       <View style={styles.content}>
         <Image
-          source={{ uri: userData.avatar || "https://cdn-icons-png.flaticon.com/512/219/219986.png" }}
+          source={{
+            uri:
+              userData.avatar ||
+              "https://cdn-icons-png.flaticon.com/512/219/219986.png",
+          }}
           style={styles.avatar}
         />
         <Text style={styles.name}>{userData.fullName}</Text>
-        <Text style={{ color: "#6b7280", marginBottom: 24 }}>{userData.email}</Text>
+        <Text style={{ color: "#6b7280", marginBottom: 8 }}>
+          {userData.email}
+        </Text>
+
+       
 
         {/* QR Code */}
         <View style={styles.qrContainer}>
           <QRCode value={qrValue} size={180} />
         </View>
 
-        <Text style={styles.instructions}>Scan QR Code to get my information</Text>
+        <Text style={styles.instructions}>
+          Scan QR Code to get my information
+        </Text>
       </View>
     </View>
   );
@@ -135,13 +152,18 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 16,
+    marginBottom: 12,
   },
   name: {
     fontSize: 18,
     fontWeight: "600",
     color: "#111827",
-    marginBottom: 8,
+  },
+  linkText: {
+    color: "#2563eb",
+    fontSize: 14,
+    marginTop: 4,
+    marginBottom: 4,
   },
   qrContainer: {
     backgroundColor: "#fff",
@@ -152,9 +174,10 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
+    marginTop: 16,
   },
   instructions: {
-    marginTop: 24,
+    marginTop: 20,
     fontSize: 14,
     color: "#6b7280",
   },
