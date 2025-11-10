@@ -1,35 +1,64 @@
-import React from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { auth, db } from "../firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
-const menuItems: { label: string; icon: any; route?: string }[] = [
-  { label: 'My Profile', icon: 'account', route: '/ProfileScreen'},
-  { label: 'Calendar', icon: 'calendar' , route: '/calendar'},
+const menuItems = [
+  { label: 'My Profile', icon: 'account', route: '/ProfileScreen' },
+  { label: 'Calendar', icon: 'calendar', route: '/calendar' },
   { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
   { label: 'Nearby Connection', icon: 'account-multiple', route: '/SendConnection' },
   { label: 'Scan QR', icon: 'qrcode-scan', route: '/QRScannerScreen' },
   { label: 'Settings', icon: 'cog', route: '/account' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
   { label: 'Sign Out', icon: 'logout', route: '/signin' },
-
 ];
 
-export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
+export default function ParticipantSidebar({ onClose }) {
   const router = useRouter();
- 
- const handleMenuItemPress = (item: { label: string; route?: string }) => {
-    
+  const [userName, setUserName] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  // Fetch user's name from Firestore
+  useEffect(() => {
+    const fetchUserName = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            setUserName(docSnap.data().fullName || "User");
+          } else {
+            setUserName("User");
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user name:", error);
+        setUserName("User");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserName();
+  }, []);
+
+  const handleMenuItemPress = (item) => {
     if (item.route) {
-        if(item.route=='/signin'){ router.replace(item.route)}
-        else {router.push(item.route as any);}
+      if (item.route === '/signin') {
+        router.replace(item.route);
+      } else {
+        router.push(item.route);
+      }
     }
     if (onClose) onClose();
   };
 
   return (
     <View style={styles.container}>
-      {/* Close / Cross button (top-right) - navigates to attendee profile */}
+      {/* Close / Cross button */}
       <TouchableOpacity
         style={styles.closeButton}
         onPress={() => {
@@ -46,8 +75,11 @@ export default function ParticipantSidebar({ onClose }: { onClose?: () => void }
           source={{ uri: 'https://example.com/profile-placeholder.png' }}
           style={styles.profileImage}
         />
-
-        <Text style={styles.profileName}>Surya Singh Tomar</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="#6366f1" />
+        ) : (
+          <Text style={styles.profileName}>{userName}</Text>
+        )}
       </View>
 
       {/* Menu Items */}
