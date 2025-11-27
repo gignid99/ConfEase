@@ -184,7 +184,7 @@ export default function AttendeeHome() {
   return (
     <View style={styles.page}>
       {/* Top bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { backgroundColor: '#4F46E5' }]}> 
         <TouchableOpacity onPress={openDrawer} style={styles.menuBtn}>
           <Ionicons name="menu" size={22} color="#fff" />
         </TouchableOpacity>
