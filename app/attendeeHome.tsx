@@ -137,7 +137,9 @@ export default function AttendeeHome() {
     const isRegistered = registrations.includes(item.id);
 
     return (
-      <View style={[styles.eventCard, { backgroundColor: colors.card }]}>
+      <Link href={{ pathname: '/event/[id]', params: { id: item.id } }} asChild>
+        <TouchableOpacity activeOpacity={0.9}>
+          <View style={[styles.eventCard, { backgroundColor: colors.card }]}>
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
@@ -173,6 +175,8 @@ export default function AttendeeHome() {
           </TouchableOpacity>
         </View>
       </View>
+      </TouchableOpacity>
+      </Link>
     );
   };
 
