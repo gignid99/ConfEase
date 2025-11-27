@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
 import { MaterialCommunityIcons as Icon } from '@expo/vector-icons';
+import { useTheme } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
@@ -11,15 +12,16 @@ const menuItems = [
   { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
   { label: 'Nearby Connection', icon: 'account-multiple', route: '/SendConnection' },
   { label: 'Scan QR', icon: 'qrcode-scan', route: '/QRScannerScreen' },
-  { label: 'Settings', icon: 'cog', route: '/account' },
+  { label: 'Settings', icon: 'cog', route: '/settings' },
   { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
   { label: 'Sign Out', icon: 'logout', route: '/signin' },
 ];
 
-export default function ParticipantSidebar({ onClose }) {
+export default function ParticipantSidebar({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
+  const { colors } = useTheme();
 
   // Fetch user's name from Firestore
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function ParticipantSidebar({ onClose }) {
     fetchUserName();
   }, []);
 
-  const handleMenuItemPress = (item) => {
+  const handleMenuItemPress = (item: any) => {
     if (item.route) {
       if (item.route === '/signin') {
         router.replace(item.route);
@@ -57,16 +59,16 @@ export default function ParticipantSidebar({ onClose }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Close / Cross button */}
-      <TouchableOpacity
+        <TouchableOpacity
         style={styles.closeButton}
         onPress={() => {
           router.push('/attendeeHome');
           if (onClose) onClose();
         }}
       >
-        <Icon name="close" size={22} color="#444" />
+        <Icon name="close" size={22} color={colors.text} />
       </TouchableOpacity>
 
       {/* Profile Section */}
@@ -76,9 +78,9 @@ export default function ParticipantSidebar({ onClose }) {
           style={styles.profileImage}
         />
         {loading ? (
-          <ActivityIndicator size="small" color="#6366f1" />
+          <ActivityIndicator size="small" color={colors.primary} />
         ) : (
-          <Text style={styles.profileName}>{userName}</Text>
+          <Text style={[styles.profileName, { color: colors.text }]}>{userName}</Text>
         )}
       </View>
 
@@ -91,8 +93,8 @@ export default function ParticipantSidebar({ onClose }) {
             onPress={() => handleMenuItemPress(item)}
             activeOpacity={0.6}
           >
-            <Icon name={item.icon} size={20} color="#888" style={styles.icon} />
-            <Text style={styles.menuText}>{item.label}</Text>
+            <Icon name={item.icon as any} size={20} color={colors.text} style={styles.icon} />
+            <Text style={[styles.menuText, { color: colors.text }]}>{item.label}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>

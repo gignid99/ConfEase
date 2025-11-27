@@ -4,20 +4,23 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { router } from 'expo-router';
 
 const menuItems = [
-  { label: 'My Profile', icon: 'account' },
-  { label: 'Calendar', icon: 'calendar' },
-  { label: 'Share Profile', icon: 'share-variant' },
-  { label: 'Nearby Connection', icon: 'account-multiple' },
-  { label: 'Certificates', icon: 'certificate' },
-  { label: 'Settings', icon: 'cog' },
-  { label: 'Help & FAQs', icon: 'help-circle' },
-  { label: 'Sign Out', icon: 'logout' },
+  { label: 'My Profile', icon: 'account', route: '/ProfileScreen' },
+  { label: 'Calendar', icon: 'calendar', route: '/calendar' },
+  { label: 'Share Profile', icon: 'share-variant', route: '/share-profile' },
+  { label: 'Nearby Connection', icon: 'account-multiple', route: '/SendConnection' },
+  { label: 'Certificates', icon: 'certificate', route: '/account' },
+  { label: 'Settings', icon: 'cog', route: '/settings' },
+  { label: 'Help & FAQs', icon: 'help-circle', route: '/account' },
+  { label: 'Sign Out', icon: 'logout', route: '/signin' },
 ];
 
 export default function Sidebar() {
-  const handleMenuItemPress = (label: string) => {
+  const handleMenuItemPress = (label: string, route?: string) => {
     console.log(`${label} pressed`);
-    // Add navigation or action handling here
+    if (route) {
+      // use router to navigate
+      router.push(route);
+    }
   };
 
   return (

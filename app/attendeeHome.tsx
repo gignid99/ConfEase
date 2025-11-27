@@ -24,9 +24,11 @@ import {
   onSnapshot,
 } from "firebase/firestore";
 import ParticipantSidebar from "../components/participantSidebar";
+import { useTheme } from '@react-navigation/native';
 import { Picker } from "@react-native-picker/picker";
 
 export default function AttendeeHome() {
+  const { colors } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [events, setEvents] = useState<any[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<any[]>([]);
@@ -135,7 +137,7 @@ export default function AttendeeHome() {
     const isRegistered = registrations.includes(item.id);
 
     return (
-      <View style={styles.eventCard}>
+      <View style={[styles.eventCard, { backgroundColor: colors.card }]}>
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
@@ -144,22 +146,23 @@ export default function AttendeeHome() {
           />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Ionicons name="image-outline" size={40} color="#9ca3af" />
+            <Ionicons name="image-outline" size={40} color={colors.text} />
           </View>
         )}
 
         <View style={styles.eventInfo}>
-          <Text style={styles.eventTitle}>{item.title}</Text>
-          <Text style={styles.eventDate}>
+          <Text style={[styles.eventTitle, { color: colors.text }]}>{item.title}</Text>
+          <Text style={[styles.eventDate, { color: colors.text }] }>
             {item.date} | {item.startTime?.split(" : ")[1]} -{" "}
             {item.endTime?.split(" : ")[1]}
           </Text>
-          <Text style={styles.eventLocation}>📍 {item.location}</Text>
-          <Text style={styles.eventDescription}>{item.description}</Text>
+          <Text style={[styles.eventLocation, { color: colors.text }]}>📍 {item.location}</Text>
+          <Text style={[styles.eventDescription, { color: colors.text }]}>{item.description}</Text>
 
           <TouchableOpacity
             style={[
               styles.registerBtn,
+              !isRegistered && { backgroundColor: colors.primary },
               isRegistered && { backgroundColor: "#ef4444" },
             ]}
             onPress={() => toggleRegister(item.id)}
@@ -173,6 +176,7 @@ export default function AttendeeHome() {
     );
   };
 
+
   return (
     <View style={styles.page}>
       {/* Top bar */}
@@ -181,7 +185,7 @@ export default function AttendeeHome() {
           <Ionicons name="menu" size={22} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.topTitle}>Attendee Home</Text>
-        <Link href="/share-profile" asChild>
+        <Link href="/ProfileScreen" asChild>
           <TouchableOpacity style={styles.profileBtn}>
             <Ionicons name="person-circle-outline" size={22} color="#fff" />
           </TouchableOpacity>
