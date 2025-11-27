@@ -3,11 +3,10 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ScrollView
 import { router } from 'expo-router';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { auth } from '../firebaseConfig'; // added auth now
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
-
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
@@ -28,7 +27,6 @@ const signIn = async () => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-
     // Step 2️⃣: Get user data from Firestore
     const userDoc = await getDoc(doc(db, "users", user.uid));
 
@@ -39,11 +37,6 @@ const signIn = async () => {
 
     const userData = userDoc.data();
     const role = userData.role;
-    const approved=userData.approve;
-     if (approved=="pending") {
-      alert("your account is pending for admin approvale!");
-      return;
-    }
 
     console.log("Logged in as:", role);
 
@@ -60,6 +53,28 @@ const signIn = async () => {
   } catch (error: any) {
     console.error(error);
     alert("Sign in failed: " + error.message);
+  }
+};
+
+const handleForgotPassword = async () => {
+  const trimmed = email.trim();
+  if (!trimmed) {
+    alert('Please enter your email address to reset your password.');
+    return;
+  }
+  // basic email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmed)) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, trimmed);
+    alert('Password reset email sent. Check your inbox.');
+  } catch (e: any) {
+    console.error('Password reset failed', e);
+    alert('Unable to send password reset email: ' + (e.message || String(e)));
   }
 };
 
@@ -129,7 +144,7 @@ const signIn = async () => {
               />
               <Text style={styles.rememberText}>Remember Me</Text>
             </View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleForgotPassword}>
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
