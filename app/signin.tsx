@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Switch, ScrollView } from 'react-native';
 import { router } from 'expo-router';
 import { Link } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { auth } from '../firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebaseConfig";
@@ -50,6 +51,16 @@ const signIn = async () => {
     } else {
       alert("Unknown role. Contact support.");
     }
+    // persist remembered email
+    try {
+      if (rememberMe) {
+        await AsyncStorage.setItem('signin.email', email.trim());
+      } else {
+        await AsyncStorage.removeItem('signin.email');
+      }
+    } catch (e) {
+      console.warn('Failed to persist remembered email', e);
+    }
   } catch (error: any) {
     console.error(error);
     alert("Sign in failed: " + error.message);
@@ -75,6 +86,32 @@ const handleForgotPassword = async () => {
   } catch (e: any) {
     console.error('Password reset failed', e);
     alert('Unable to send password reset email: ' + (e.message || String(e)));
+  }
+};
+
+useEffect(() => {
+  const loadRemembered = async () => {
+    try {
+      const saved = await AsyncStorage.getItem('signin.email');
+      if (saved) {
+        setEmail(saved);
+        setRememberMe(true);
+      }
+    } catch (e) {
+      console.warn('Failed to load saved email', e);
+    }
+  };
+  loadRemembered();
+}, []);
+
+const handleRememberToggle = async (val: boolean) => {
+  setRememberMe(val);
+  if (!val) {
+    try {
+      await AsyncStorage.removeItem('signin.email');
+    } catch (e) {
+      console.warn('Failed to remove saved email', e);
+    }
   }
 };
 
@@ -138,7 +175,7 @@ const handleForgotPassword = async () => {
             <View style={styles.rememberMe}>
               <Switch
                 value={rememberMe}
-                onValueChange={setRememberMe}
+                onValueChange={handleRememberToggle}
                 trackColor={{ false: '#d1d5db', true: '#6366f1' }}
                 thumbColor="#fff"
               />
